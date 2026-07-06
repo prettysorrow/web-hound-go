@@ -7,7 +7,7 @@ export MIGRATE_CONTAINER="go-postgres-migrate"
 
 export POSTGRES_HOST_PATH="$REPO_ROOT/postgres-db"
 export POSTGRES_DOCKER_PATH="/var/lib/postgresql"
-export POSTGRES_CONNECTION="postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@postgres-server:5432/$POSTGRES_DB"
+export POSTGRES_CONNECTION="postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@postgres-server:5432/$POSTGRES_DB?sslmode=disable"
 
 export MIGRATE_HOST_PATH="$REPO_ROOT/postgres-migrations"
 export MIGRATE_DOCKER_PATH="/migrations"

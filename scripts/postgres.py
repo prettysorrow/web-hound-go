@@ -58,7 +58,7 @@ def postgres_migrate_create(seq):
         handle_error(rez)
 
 def postgres_migrate_up(n = 1):
-    rez = execute(f"docker compose run --rm {MIGRATE_SERVICE} up {n} -path {MIGRATE_DOCKER_PATH} -database {POSTGRES_CONNECTION}")
+    rez = execute(f'docker compose run --rm {MIGRATE_SERVICE} -path {MIGRATE_DOCKER_PATH} -database "{POSTGRES_CONNECTION}" up {n}')
     if rez.returncode == 0:
         print(f"{n} new migrations have been applied")
         sys.exit(0)
@@ -66,7 +66,7 @@ def postgres_migrate_up(n = 1):
         handle_error(rez)
 
 def postgres_migrate_down(n = 1):
-    rez = execute(f"docker compose run --rm {MIGRATE_SERVICE} down {n} -path {MIGRATE_DOCKER_PATH} -database {POSTGRES_CONNECTION}")
+    rez = execute(f'docker compose run --rm {MIGRATE_SERVICE} -path {MIGRATE_DOCKER_PATH} -database "{POSTGRES_CONNECTION}" down {n}')
     if rez.returncode == 0:
         print(f"last {n} migrations have been reverted")
         sys.exit(0)
