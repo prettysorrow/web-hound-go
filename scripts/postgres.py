@@ -10,6 +10,9 @@ MIGRATE_CONTAINER = os.environ["MIGRATE_CONTAINER"]
 MIGRATE_HOST_PATH = os.environ["MIGRATE_HOST_PATH"]
 MIGRATE_DOCKER_PATH = os.environ["MIGRATE_DOCKER_PATH"]
 
+POSTGRES_HOST_PATH = os.environ["POSTGRES_HOST_PATH"]
+POSTGRES_DOCKER_PATH = os.environ["POSTGRES_DOCKER_PATH"]
+
 POSTGRES_CONNECTION = os.environ["POSTGRES_CONNECTION"]
 
 def execute(cmd):
@@ -73,13 +76,20 @@ def postgres_migrate_down(n = 1):
     else:
         handle_error(rez)
 
+def postgres_clean_up(n = 1):
+    execute(f"docker compose down {POSTGRES_SERVICE}")
+    execute(f"rm -rf {POSTGRES_HOST_PATH}")
+    sys.exit(0)
+
 def print_usage():
     print("Usage:")
     print("  python postgres.py --help                  Show this message")
+    print("  python postgres.py clean-up                Drop entire database")
     print("  python postgres.py server-up               Start postgres server")
     print("  python postgres.py server-down             Stop postgres server")
     print("  python postgres.py migrate-create <seq>    Create migration (seq = integer)")
     print("  python postgres.py migrate-up <n>          Apply n migrations")
+    print("  python postgres.py migrate-down <n>        Revert n migrations")
     print("  python postgres.py migrate-down <n>        Revert n migrations")
 
 if __name__ == "__main__":
@@ -97,6 +107,8 @@ if __name__ == "__main__":
             postgres_server_up()
         if sys.argv[1] in ["server-down", "server_down"]:
             postgres_server_down()
+        if sys.argv[1] in ["clean-up", "clean_up"]:
+            postgres_clean_up()
     
     if argc == 3:
         if sys.argv[1] in ["migrate-create", "migrate_create"]:
@@ -105,3 +117,6 @@ if __name__ == "__main__":
             postgres_migrate_up(int(sys.argv[2]))
         if sys.argv[1] in ["migrate-down", "migrate_down"]:
             postgres_migrate_down(int(sys.argv[2]))
+
+    print_usage()
+    sys.exit(1)
