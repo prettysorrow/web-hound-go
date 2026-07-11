@@ -13,7 +13,7 @@ MIGRATE_DOCKER_PATH = os.environ["MIGRATE_DOCKER_PATH"]
 POSTGRES_HOST_PATH = os.environ["POSTGRES_HOST_PATH"]
 POSTGRES_DOCKER_PATH = os.environ["POSTGRES_DOCKER_PATH"]
 
-POSTGRES_CONNECTION = os.environ["POSTGRES_CONNECTION"]
+POSTGRES_DOCKER_CONNECTION = os.environ["POSTGRES_DOCKER_CONNECTION"]
 
 def execute(cmd):
     return subprocess.run(cmd, shell=True, stdout=subprocess.PIPE ,stderr=subprocess.PIPE)
@@ -61,7 +61,7 @@ def postgres_migrate_create(seq):
         handle_error(rez)
 
 def postgres_migrate_up(n = 1):
-    rez = execute(f'docker compose run --rm {MIGRATE_SERVICE} -path {MIGRATE_DOCKER_PATH} -database "{POSTGRES_CONNECTION}" up {n}')
+    rez = execute(f'docker compose run --rm {MIGRATE_SERVICE} -path {MIGRATE_DOCKER_PATH} -database "{POSTGRES_DOCKER_CONNECTION}" up {n}')
     if rez.returncode == 0:
         print(f"{n} new migrations have been applied")
         sys.exit(0)
@@ -69,7 +69,7 @@ def postgres_migrate_up(n = 1):
         handle_error(rez)
 
 def postgres_migrate_down(n = 1):
-    rez = execute(f'docker compose run --rm {MIGRATE_SERVICE} -path {MIGRATE_DOCKER_PATH} -database "{POSTGRES_CONNECTION}" down {n}')
+    rez = execute(f'docker compose run --rm {MIGRATE_SERVICE} -path {MIGRATE_DOCKER_PATH} -database "{POSTGRES_DOCKER_CONNECTION}" down {n}')
     if rez.returncode == 0:
         print(f"last {n} migrations have been reverted")
         sys.exit(0)
