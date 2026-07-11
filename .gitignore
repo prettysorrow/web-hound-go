@@ -1,2 +1,3 @@
 postgres-db/
 .secrets.sh
+.vscode
