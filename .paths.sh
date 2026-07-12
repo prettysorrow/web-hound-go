@@ -16,3 +16,6 @@ export POSTGRES_HOST_CONNECTION="postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@lo
 
 export MIGRATE_HOST_PATH="$REPO_ROOT/postgres-migrations"
 export MIGRATE_DOCKER_PATH="/migrations"
+
+export BACKEND_SERVER_HOST="localhost"
+export BACKEND_SERVER_PORT="8080"

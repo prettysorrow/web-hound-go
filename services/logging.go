@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/rs/zerolog"
@@ -55,3 +56,7 @@ func LoggerMiddleware(log zerolog.Logger) func(http.Handler) http.Handler {
 		})
 	}
 }
+
+var (
+	Logger zerolog.Logger = zerolog.New(os.Stdout).With().Timestamp().Logger()
+)
