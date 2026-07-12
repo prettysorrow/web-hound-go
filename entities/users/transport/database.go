@@ -1,15 +1,15 @@
-package webhound_transport
+package webhound_users_transport
 
 import (
 	"context"
 	"fmt"
 
 	"github.com/jackc/pgx/v5"
-	entities "go.mod/entities/users"
+	models "go.mod/entities/users/models"
 )
 
-func GetUser(db *pgx.Conn, input GetUserInput) (*entities.User, error) {
-	var user entities.User
+func GetUser(db *pgx.Conn, input GetUserInput) (*models.User, error) {
+	var user models.User
 	result := db.QueryRow(context.Background(), "select * from core.user where id = $1;", input.Id)
 	err := result.Scan(&user.Id, &user.DisplayName, &user.UsedService)
 
@@ -21,8 +21,8 @@ func GetUser(db *pgx.Conn, input GetUserInput) (*entities.User, error) {
 	return &user, nil
 }
 
-func PostUser(db *pgx.Conn, input PostUserInput) (*entities.User, error) {
-	var user entities.User
+func PostUser(db *pgx.Conn, input PostUserInput) (*models.User, error) {
+	var user models.User
 	result := db.QueryRow(context.Background(), "insert into core.user (display_name, used_service) values ($1, $2) returning id, display_name, used_service;", input.DisplayName, input.UsedService)
 	err := result.Scan(&user.Id, &user.DisplayName, &user.UsedService)
 
@@ -34,7 +34,7 @@ func PostUser(db *pgx.Conn, input PostUserInput) (*entities.User, error) {
 	return &user, nil
 }
 
-func GetUsers(db *pgx.Conn, input GetUsersInput) (users []entities.User, err error) {
+func GetUsers(db *pgx.Conn, input GetUsersInput) (users []models.User, err error) {
 	rows, err := db.Query(context.Background(), "select * from core.user;")
 	if err != nil {
 		err = fmt.Errorf("failed to get all users: %w", err)
@@ -42,7 +42,7 @@ func GetUsers(db *pgx.Conn, input GetUsersInput) (users []entities.User, err err
 	}
 
 	for rows.Next() {
-		var user entities.User
+		var user models.User
 		err := rows.Scan(&user.Id, &user.DisplayName, &user.UsedService)
 
 		if err != nil {

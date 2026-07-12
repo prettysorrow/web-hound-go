@@ -1,4 +1,4 @@
-package webhound_entities_github
+package webhound_github_models
 
 type Pfp struct {
 	Id        int    `json:"id" db:"id"`

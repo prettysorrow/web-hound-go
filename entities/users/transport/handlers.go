@@ -1,4 +1,4 @@
-package webhound_transport
+package webhound_users_transport
 
 import (
 	"encoding/json"

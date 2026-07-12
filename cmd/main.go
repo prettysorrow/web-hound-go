@@ -9,8 +9,8 @@ import (
 
 	"github.com/rs/zerolog"
 	database "go.mod/database"
+	users_transport "go.mod/entities/users/transport"
 	services "go.mod/services"
-	transport_users "go.mod/transport/users"
 )
 
 var (
@@ -62,9 +62,9 @@ func main() {
 
 	mux := http.NewServeMux()
 
-	transport_users.AddGetUserHandler(mux, db)
-	transport_users.AddPostUserHandler(mux, db)
-	transport_users.AddGetUsersHandler(mux, db)
+	users_transport.AddGetUserHandler(mux, db)
+	users_transport.AddPostUserHandler(mux, db)
+	users_transport.AddGetUsersHandler(mux, db)
 
 	handler := services.LoggerMiddleware(logger)(mux)
 

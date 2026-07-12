@@ -1,4 +1,4 @@
-package webhound_transport
+package webhound_users_transport
 
 type GetUserInput struct {
 	Id int64 `json:"id"`
