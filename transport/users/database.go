@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/jackc/pgx/v5"
-	entities "go.mod/entities"
+	entities "go.mod/entities/users"
 )
 
 func GetUser(db *pgx.Conn, input GetUserInput) (*entities.User, error) {

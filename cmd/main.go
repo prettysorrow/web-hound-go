@@ -10,12 +10,11 @@ import (
 	"github.com/rs/zerolog"
 	database "go.mod/database"
 	services "go.mod/services"
-	webhound_services "go.mod/services"
-	transport "go.mod/transport"
+	transport_users "go.mod/transport/users"
 )
 
 var (
-	logger zerolog.Logger = webhound_services.Logger
+	logger zerolog.Logger = services.Logger
 )
 
 func failwith(err error) {
@@ -63,9 +62,9 @@ func main() {
 
 	mux := http.NewServeMux()
 
-	transport.AddGetUserHandler(mux, db)
-	transport.AddPostUserHandler(mux, db)
-	transport.AddGetUsersHandler(mux, db)
+	transport_users.AddGetUserHandler(mux, db)
+	transport_users.AddPostUserHandler(mux, db)
+	transport_users.AddGetUsersHandler(mux, db)
 
 	handler := services.LoggerMiddleware(logger)(mux)
 
