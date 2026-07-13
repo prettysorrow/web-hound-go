@@ -1,4 +1,4 @@
-export REPO_ROOT="/Users/psi/Desktop/go-demo"
+export REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 export POSTGRES_SERVICE="postgres-server"
 export POSTGRES_CONTAINER="go-postgres-server"
