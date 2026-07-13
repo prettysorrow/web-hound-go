@@ -1,49 +1,43 @@
 package webhound_users_transport
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strconv"
 
 	"github.com/jackc/pgx/v5"
+	database "go.mod/entities/users/database"
 )
 
-func AddGetUserHandler(mux *http.ServeMux, db *pgx.Conn) {
-	mux.HandleFunc("GET /users/{id}", func(w http.ResponseWriter, r *http.Request) {
+func AddGetUserHandler(mux *http.ServeMux, db *pgx.Conn, ctx context.Context) {
+	mux.HandleFunc("GET /users/{used_service}/{service_id}", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		encoder := json.NewEncoder(w)
 
-		id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
-		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			err = fmt.Errorf("failed to handle GET /users/{id} request: failed to parse id: %w", err)
-			encoder.Encode(err.Error())
-			return
-		}
+		used_service, service_id := r.PathValue("used_service"), r.PathValue("service_id")
 
-		input_for_db := GetUserInput{Id: id}
-		user, err := GetUser(db, input_for_db)
+		user_dto, err := GetUserDto(db, ctx, GetUserDtoInput{UsedService: used_service, ServiceId: service_id})
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
-			err = fmt.Errorf("failed to handle GET /users/{id} request: %w", err)
+			err = fmt.Errorf("failed to handle GET /users/{used_service}/{service_id} request: %w", err)
 			encoder.Encode(err.Error())
 			return
 		}
 
 		w.WriteHeader(http.StatusOK)
-		encoder.Encode(user)
+		encoder.Encode(user_dto)
 	})
 }
 
-func AddPostUserHandler(mux *http.ServeMux, db *pgx.Conn) {
+func AddPostUserHandler(mux *http.ServeMux, db *pgx.Conn, ctx context.Context) {
 	mux.HandleFunc("POST /users", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Content-Type", "application/json")
 		encoder := json.NewEncoder(w)
 		decoder := json.NewDecoder(r.Body)
 
-		var user PostUserInput
-		err := decoder.Decode(&user)
+		var user_dto User
+		err := decoder.Decode(&user_dto)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			err = fmt.Errorf("failed to handle POST /users request: failed to parse user: %w", err)
@@ -51,7 +45,7 @@ func AddPostUserHandler(mux *http.ServeMux, db *pgx.Conn) {
 			return
 		}
 
-		result, err := PostUser(db, user)
+		_, err = PostUserDto(db, ctx, &user_dto)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			err = fmt.Errorf("failed to handle POST /users request: failed to insert user into database: %w", err)
@@ -60,17 +54,16 @@ func AddPostUserHandler(mux *http.ServeMux, db *pgx.Conn) {
 		}
 
 		w.WriteHeader(http.StatusOK)
-		encoder.Encode(result)
+		encoder.Encode(user_dto)
 	})
 }
 
-func AddGetUsersHandler(mux *http.ServeMux, db *pgx.Conn) {
+func AddGetUsersHandler(mux *http.ServeMux, db *pgx.Conn, ctx context.Context) {
 	mux.HandleFunc("GET /users", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Content-Type", "application/json")
 		encoder := json.NewEncoder(w)
 
-		input_for_db := GetUsersInput{}
-		result, err := GetUsers(db, input_for_db)
+		user_entities, err := database.GetUsers(db, ctx)
 
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
@@ -79,7 +72,13 @@ func AddGetUsersHandler(mux *http.ServeMux, db *pgx.Conn) {
 			return
 		}
 
+		var user_dtos []User
+		for _, user_entity := range user_entities {
+			user_dto := UserEntityToDto(&user_entity)
+			user_dtos = append(user_dtos, user_dto)
+		}
+
 		w.WriteHeader(http.StatusOK)
-		encoder.Encode(result)
+		encoder.Encode(user_dtos)
 	})
 }
