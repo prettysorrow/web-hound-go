@@ -1,5 +1,5 @@
-DELETE TABLE core.request;
+DROP TABLE core.request;
 
-DELETE TABLE core.user;
+DROP TABLE core.user;
 
-DELETE SCHEMA core;
+DROP SCHEMA core;

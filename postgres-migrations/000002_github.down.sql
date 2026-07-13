@@ -1,7 +1,7 @@
-DELETE TABLE github.request;
+DROP TABLE github.request;
 
-DELETE TABLE github.follows;
+DROP TABLE github.follows;
 
-DELETE TABLE github.pfp;
+DROP TABLE github.user;
 
-DELETE SCHEMA github;
+DROP SCHEMA github;
