@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -9,6 +10,8 @@ import (
 
 	"github.com/rs/zerolog"
 	database "go.mod/database"
+	github_transport "go.mod/entities/github/transport"
+	requests_transport "go.mod/entities/requests/transport"
 	users_transport "go.mod/entities/users/transport"
 	services "go.mod/services"
 )
@@ -62,9 +65,18 @@ func main() {
 
 	mux := http.NewServeMux()
 
-	users_transport.AddGetUserHandler(mux, db)
-	users_transport.AddPostUserHandler(mux, db)
-	users_transport.AddGetUsersHandler(mux, db)
+	ctx := context.Background()
+
+	users_transport.AddGetUserHandler(mux, db, ctx)
+	users_transport.AddPostUserHandler(mux, db, ctx)
+	users_transport.AddGetUsersHandler(mux, db, ctx)
+
+	github_transport.AddGetUserHandler(mux, db, ctx)
+	github_transport.AddPostUserHandler(mux, db, ctx)
+
+	requests_transport.AddGetRequestHandler(mux, db, ctx)
+	requests_transport.AddGetUserRequestsHandler(mux, db, ctx)
+	requests_transport.AddPostRequestHandler(mux, db, ctx)
 
 	handler := services.LoggerMiddleware(logger)(mux)
 
