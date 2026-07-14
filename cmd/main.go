@@ -10,7 +10,10 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/rs/zerolog"
+	httpSwagger "github.com/swaggo/http-swagger"
+
 	database "go.mod/database"
+	_ "go.mod/docs"
 	github_transport "go.mod/entities/github/transport"
 	requests_transport "go.mod/entities/requests/transport"
 	users_transport "go.mod/entities/users/transport"
