@@ -88,7 +88,8 @@ def dev():
 
     try:
         webbrowser.open(url)
-    except Exception:
+    except Exception as ex:
+        print(f"warning: failed to open browser: {ex}")
         pass
 
     proc.wait()
