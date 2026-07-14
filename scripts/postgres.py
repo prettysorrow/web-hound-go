@@ -3,6 +3,7 @@
 import os
 import sys
 import subprocess
+import webbrowser
 
 POSTGRES_SERVICE = os.environ["POSTGRES_SERVICE"]
 POSTGRES_CONTAINER = os.environ["POSTGRES_CONTAINER"]
@@ -16,6 +17,9 @@ POSTGRES_HOST_PATH = os.environ["POSTGRES_HOST_PATH"]
 POSTGRES_DOCKER_PATH = os.environ["POSTGRES_DOCKER_PATH"]
 
 POSTGRES_DOCKER_CONNECTION = os.environ["POSTGRES_DOCKER_CONNECTION"]
+
+PGWEB_PORT = os.environ["PGWEB_PORT"]
+PGWEB_SERVICE = os.environ["PGWEB_SERVICE"]
 
 def execute(cmd):
     return subprocess.run(cmd, shell=True, stdout=subprocess.PIPE ,stderr=subprocess.PIPE)
@@ -62,16 +66,16 @@ def postgres_migrate_create(seq):
     else:
         handle_error(rez)
 
-def postgres_migrate_up(n = 1):
-    rez = execute(f'docker compose run --rm {MIGRATE_SERVICE} -path {MIGRATE_DOCKER_PATH} -database "{POSTGRES_DOCKER_CONNECTION}" up {n}')
+def postgres_migrate_up(n = None):
+    rez = execute(f'docker compose run --rm {MIGRATE_SERVICE} -path {MIGRATE_DOCKER_PATH} -database "{POSTGRES_DOCKER_CONNECTION}" up {n or ""}')
     if rez.returncode == 0:
         print(f"{n} new migrations have been applied")
         sys.exit(0)
     else:
         handle_error(rez)
 
-def postgres_migrate_down(n = 1):
-    rez = execute(f'docker compose run --rm {MIGRATE_SERVICE} -path {MIGRATE_DOCKER_PATH} -database "{POSTGRES_DOCKER_CONNECTION}" down {n}')
+def postgres_migrate_down(n = None):
+    rez = execute(f'docker compose run --rm {MIGRATE_SERVICE} -path {MIGRATE_DOCKER_PATH} -database "{POSTGRES_DOCKER_CONNECTION}" down {n or ""}')
     if rez.returncode == 0:
         print(f"last {n} migrations have been reverted")
         sys.exit(0)
@@ -83,16 +87,34 @@ def postgres_clean_up(n = 1):
     execute(f"rm -rf {POSTGRES_HOST_PATH}")
     sys.exit(0)
 
+def postgres_pgweb_up():
+    url = f"http://localhost:{PGWEB_PORT}/"
+    execute(f"docker compose up -d {PGWEB_SERVICE}")
+    try:
+        webbrowser.open(url)
+        print(f"started pgweb on {url}")
+    except Exception as ex:
+        print(f"warning: failed to open browser: {ex}")
+        pass
+
+    sys.exit(0)
+
+def postgres_pgweb_down():
+    execute(f"docker compose down -v {PGWEB_SERVICE}")
+    sys.exit(0)
+
 def print_usage():
     print("Usage:")
-    print("  python postgres.py --help                  Show this message")
-    print("  python postgres.py clean-up                Drop entire database")
-    print("  python postgres.py server-up               Start postgres server")
-    print("  python postgres.py server-down             Stop postgres server")
-    print("  python postgres.py migrate-create <seq>    Create migration (seq = integer)")
-    print("  python postgres.py migrate-up <n>          Apply n migrations")
-    print("  python postgres.py migrate-down <n>        Revert n migrations")
-    print("  python postgres.py migrate-down <n>        Revert n migrations")
+    print("  python3 scripts/postgres.py --help                  Show this message")
+    print("  python3 scripts/postgres.py clean-up                Drop entire database")
+    print("  python3 scripts/postgres.py pgweb-up                Start pgweb server")
+    print("  python3 scripts/postgres.py pgweb-down              Stop pgweb server")
+    print("  python3 scripts/postgres.py server-up               Start postgres server")
+    print("  python3 scripts/postgres.py server-down             Stop postgres server")
+    print("  python3 scripts/postgres.py migrate-create <seq>    Create migration")
+    print("  python3 scripts/postgres.py migrate-up <n>          Apply n migrations")
+    print("  python3 scripts/postgres.py migrate-down <n>        Revert n migrations")
+    print("  python3 scripts/postgres.py migrate-down <n>        Revert n migrations")
 
 if __name__ == "__main__":
     argc = len(sys.argv)
@@ -111,7 +133,15 @@ if __name__ == "__main__":
             postgres_server_down()
         if sys.argv[1] in ["clean-up", "clean_up"]:
             postgres_clean_up()
-    
+        if sys.argv[1] in ["pgweb-up", "pgweb_up"]:
+            postgres_pgweb_up()
+        if sys.argv[1] in ["pgweb-down", "pgweb_down"]:
+            postgres_pgweb_down()
+        if sys.argv[1] in ["migrate-up", "migrate_up"]:
+            postgres_migrate_up()
+        if sys.argv[1] in ["migrate-down", "migrate_down"]:
+            postgres_migrate_down()
+
     if argc == 3:
         if sys.argv[1] in ["migrate-create", "migrate_create"]:
             postgres_migrate_create(sys.argv[2])
