@@ -6,16 +6,17 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/jackc/pgx/v5"
 	database "go.mod/entities/users/database"
 )
 
-func AddGetUserHandler(mux *http.ServeMux, db *pgx.Conn, ctx context.Context) {
-	mux.HandleFunc("GET /users/{used_service}/{service_id}", func(w http.ResponseWriter, r *http.Request) {
+func AddGetUserHandler(r *chi.Mux, db *pgx.Conn, ctx context.Context) {
+	r.Get("/users/{used_service}/{service_id}", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		encoder := json.NewEncoder(w)
 
-		used_service, service_id := r.PathValue("used_service"), r.PathValue("service_id")
+		used_service, service_id := chi.URLParam(r, "used_service"), chi.URLParam(r, "service_id")
 
 		user_dto, err := GetUserDto(db, ctx, GetUserDtoInput{UsedService: used_service, ServiceId: service_id})
 		if err != nil {
@@ -30,8 +31,8 @@ func AddGetUserHandler(mux *http.ServeMux, db *pgx.Conn, ctx context.Context) {
 	})
 }
 
-func AddPostUserHandler(mux *http.ServeMux, db *pgx.Conn, ctx context.Context) {
-	mux.HandleFunc("POST /users", func(w http.ResponseWriter, r *http.Request) {
+func AddPostUserHandler(r *chi.Mux, db *pgx.Conn, ctx context.Context) {
+	r.Post("/users", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Content-Type", "application/json")
 		encoder := json.NewEncoder(w)
 		decoder := json.NewDecoder(r.Body)
@@ -58,8 +59,8 @@ func AddPostUserHandler(mux *http.ServeMux, db *pgx.Conn, ctx context.Context) {
 	})
 }
 
-func AddGetUsersHandler(mux *http.ServeMux, db *pgx.Conn, ctx context.Context) {
-	mux.HandleFunc("GET /users", func(w http.ResponseWriter, r *http.Request) {
+func AddGetUsersHandler(r *chi.Mux, db *pgx.Conn, ctx context.Context) {
+	r.Get("/users", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Content-Type", "application/json")
 		encoder := json.NewEncoder(w)
 

@@ -7,18 +7,18 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/go-chi/chi/v5"
+	"github.com/jackc/pgx/v5"
 	database "go.mod/entities/requests/database"
 	users_database "go.mod/entities/users/database"
-
-	"github.com/jackc/pgx/v5"
 )
 
-func AddGetRequestHandler(mux *http.ServeMux, db *pgx.Conn, ctx context.Context) {
-	mux.HandleFunc("GET /requests/{id}", func(w http.ResponseWriter, r *http.Request) {
+func AddGetRequestHandler(r *chi.Mux, db *pgx.Conn, ctx context.Context) {
+	r.Get("/requests/{id}", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Content-Type", "application/json")
 		encoder := json.NewEncoder(w)
 
-		id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
+		id, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
 		if err != nil {
 			err = fmt.Errorf("request on 'GET /requests/{id}' failed: failed to parse id: %w", err)
 			w.WriteHeader(http.StatusBadRequest)
@@ -39,12 +39,12 @@ func AddGetRequestHandler(mux *http.ServeMux, db *pgx.Conn, ctx context.Context)
 	})
 }
 
-func AddGetUserRequestsHandler(mux *http.ServeMux, db *pgx.Conn, ctx context.Context) {
-	mux.HandleFunc("GET /users/{id}/requests", func(w http.ResponseWriter, r *http.Request) {
+func AddGetUserRequestsHandler(r *chi.Mux, db *pgx.Conn, ctx context.Context) {
+	r.Get("/users/{id}/requests", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Content-Type", "application/json")
 		encoder := json.NewEncoder(w)
 
-		user_id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
+		user_id, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
 		if err != nil {
 			err = fmt.Errorf("failed to parse id for GET /users/{id}/requests: %w", err)
 			w.WriteHeader(http.StatusBadRequest)
@@ -78,8 +78,8 @@ func AddGetUserRequestsHandler(mux *http.ServeMux, db *pgx.Conn, ctx context.Con
 	})
 }
 
-func AddPostRequestHandler(mux *http.ServeMux, db *pgx.Conn, ctx context.Context) {
-	mux.HandleFunc("POST /requests", func(w http.ResponseWriter, r *http.Request) {
+func AddPostRequestHandler(r *chi.Mux, db *pgx.Conn, ctx context.Context) {
+	r.Post("/requests", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Content-Type", "application/json")
 		encoder := json.NewEncoder(w)
 		decoder := json.NewDecoder(r.Body)

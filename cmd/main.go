@@ -8,6 +8,7 @@ import (
 	"os"
 	"sync"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/rs/zerolog"
 	database "go.mod/database"
 	github_transport "go.mod/entities/github/transport"
@@ -63,27 +64,27 @@ func main() {
 		failwith(err)
 	}
 
-	mux := http.NewServeMux()
+	r := chi.NewRouter()
+
+	r.Use(services.LoggerMiddleware(logger))
 
 	ctx := context.Background()
 
-	users_transport.AddGetUserHandler(mux, db, ctx)
-	users_transport.AddPostUserHandler(mux, db, ctx)
-	users_transport.AddGetUsersHandler(mux, db, ctx)
+	users_transport.AddGetUserHandler(r, db, ctx)
+	users_transport.AddPostUserHandler(r, db, ctx)
+	users_transport.AddGetUsersHandler(r, db, ctx)
 
-	github_transport.AddGetUserHandler(mux, db, ctx)
-	github_transport.AddPostUserHandler(mux, db, ctx)
+	github_transport.AddGetUserHandler(r, db, ctx)
+	github_transport.AddPostUserHandler(r, db, ctx)
 
-	requests_transport.AddGetRequestHandler(mux, db, ctx)
-	requests_transport.AddGetUserRequestsHandler(mux, db, ctx)
-	requests_transport.AddPostRequestHandler(mux, db, ctx)
-
-	handler := services.LoggerMiddleware(logger)(mux)
+	requests_transport.AddGetRequestHandler(r, db, ctx)
+	requests_transport.AddGetUserRequestsHandler(r, db, ctx)
+	requests_transport.AddPostRequestHandler(r, db, ctx)
 
 	var wg sync.WaitGroup
 
 	wg.Go(func() {
-		err := http.ListenAndServe(*server_addr, handler)
+		err := http.ListenAndServe(*server_addr, r)
 		if err != nil {
 			if errors.Is(err, http.ErrServerClosed) {
 				logger.Info().Msg("backend server closed gracefully")

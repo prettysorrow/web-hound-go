@@ -6,15 +6,16 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/jackc/pgx/v5"
 )
 
-func AddGetUserHandler(mux *http.ServeMux, db *pgx.Conn, ctx context.Context) {
-	mux.HandleFunc("GET /github/users/{username}", func(w http.ResponseWriter, r *http.Request) {
+func AddGetUserHandler(r *chi.Mux, db *pgx.Conn, ctx context.Context) {
+	r.Get("/github/users/{username}", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Content-Type", "application/json")
 		encoder := json.NewEncoder(w)
 
-		username := r.PathValue("username")
+		username := chi.URLParam(r, "username")
 
 		user_dto, err := GetUserDto(db, ctx, username)
 		if err != nil {
@@ -29,8 +30,8 @@ func AddGetUserHandler(mux *http.ServeMux, db *pgx.Conn, ctx context.Context) {
 	})
 }
 
-func AddPostUserHandler(mux *http.ServeMux, db *pgx.Conn, ctx context.Context) {
-	mux.HandleFunc("POST /github/users", func(w http.ResponseWriter, r *http.Request) {
+func AddPostUserHandler(r *chi.Mux, db *pgx.Conn, ctx context.Context) {
+	r.Post("/github/users", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Content-Type", "application/json")
 		encoder := json.NewEncoder(w)
 		decoder := json.NewDecoder(r.Body)
