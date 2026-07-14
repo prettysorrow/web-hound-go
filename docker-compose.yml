@@ -15,3 +15,15 @@ services:
     image: migrate/migrate:v4.19.1
     volumes:
       - ${MIGRATE_HOST_PATH}:${MIGRATE_DOCKER_PATH}
+    depends_on:
+      - postgres-server
+
+  pgweb:
+    image: sosedoff/pgweb:latest
+    container_name: pgweb
+    ports:
+      - ${PGWEB_HOST_PORT}:8081
+    environment:
+      - PGWEB_DATABASE_URL=${POSTGRES_DOCKER_CONNECTION}
+    depends_on:
+      - postgres-server
