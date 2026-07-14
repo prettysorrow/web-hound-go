@@ -22,4 +22,5 @@ export BACKEND_SERVER_PORT="8080"
 
 export SWAG_SERVER_PORT="6767"
 
-export PGWEB_HOST_PORT="8082"
+export PGWEB_SERVICE="pgweb"
+export PGWEB_PORT="8082"

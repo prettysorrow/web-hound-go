@@ -22,7 +22,7 @@ services:
     image: sosedoff/pgweb:latest
     container_name: pgweb
     ports:
-      - ${PGWEB_HOST_PORT}:8081
+      - ${PGWEB_PORT}:8081
     environment:
       - PGWEB_DATABASE_URL=${POSTGRES_DOCKER_CONNECTION}
     depends_on:
