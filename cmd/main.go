@@ -1,3 +1,7 @@
+// @title           WebHound API
+// @version         0.1.0
+// @description     Backend API for WebHound service
+// @BasePath        /
 package main
 
 import (
@@ -83,6 +87,8 @@ func main() {
 	requests_transport.AddGetRequestHandler(r, db, ctx)
 	requests_transport.AddGetUserRequestsHandler(r, db, ctx)
 	requests_transport.AddPostRequestHandler(r, db, ctx)
+
+	r.Get("/swagger/*", httpSwagger.Handler())
 
 	var wg sync.WaitGroup
 

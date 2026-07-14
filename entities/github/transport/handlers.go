@@ -10,6 +10,15 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
+// @Summary      Get GitHub user by username
+// @Description  Retrieve a GitHub user profile including followers and followees
+// @Tags         github
+// @Accept       json
+// @Produce      json
+// @Param        username path string true "GitHub username"
+// @Success      200 {object} webhound_github_transport.User "GitHub user found"
+// @Failure      400 {object} string "User not found or database error"
+// @Router       /github/users/{username} [get]
 func AddGetUserHandler(r *chi.Mux, db *pgx.Conn, ctx context.Context) {
 	r.Get("/github/users/{username}", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Content-Type", "application/json")
@@ -30,6 +39,15 @@ func AddGetUserHandler(r *chi.Mux, db *pgx.Conn, ctx context.Context) {
 	})
 }
 
+// @Summary      Create a GitHub user
+// @Description  Register a new GitHub user with profile data and follow relationships
+// @Tags         github
+// @Accept       json
+// @Produce      json
+// @Param        user body webhound_github_transport.User true "GitHub user data"
+// @Success      200 {object} webhound_github_transport.User "GitHub user created successfully"
+// @Failure      400 {object} string "Invalid input or database error"
+// @Router       /github/users [post]
 func AddPostUserHandler(r *chi.Mux, db *pgx.Conn, ctx context.Context) {
 	r.Post("/github/users", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Content-Type", "application/json")

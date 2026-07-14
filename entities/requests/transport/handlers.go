@@ -13,6 +13,15 @@ import (
 	users_database "go.mod/entities/users/database"
 )
 
+// @Summary      Get request by ID
+// @Description  Retrieve a request by its numeric ID, including creator info and results
+// @Tags         requests
+// @Accept       json
+// @Produce      json
+// @Param        id path int true "Request ID"
+// @Success      200 {object} webhound_requests_transport.Request "Request found"
+// @Failure      400 {object} string "Invalid ID or request not found"
+// @Router       /requests/{id} [get]
 func AddGetRequestHandler(r *chi.Mux, db *pgx.Conn, ctx context.Context) {
 	r.Get("/requests/{id}", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Content-Type", "application/json")
@@ -39,6 +48,15 @@ func AddGetRequestHandler(r *chi.Mux, db *pgx.Conn, ctx context.Context) {
 	})
 }
 
+// @Summary      List requests by user ID
+// @Description  Retrieve all requests created by a specific user
+// @Tags         requests
+// @Accept       json
+// @Produce      json
+// @Param        id path int true "User ID"
+// @Success      200 {array} webhound_requests_transport.Request "List of user requests"
+// @Failure      400 {object} string "Invalid ID or database error"
+// @Router       /users/{id}/requests [get]
 func AddGetUserRequestsHandler(r *chi.Mux, db *pgx.Conn, ctx context.Context) {
 	r.Get("/users/{id}/requests", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Content-Type", "application/json")
@@ -78,6 +96,16 @@ func AddGetUserRequestsHandler(r *chi.Mux, db *pgx.Conn, ctx context.Context) {
 	})
 }
 
+// @Summary      Create a new request
+// @Description  Submit a new request linked to an existing user
+// @Tags         requests
+// @Accept       json
+// @Produce      json
+// @Param        request body webhound_requests_transport.Request true "Request to create"
+// @Success      200 {object} webhound_requests_transport.Request "Request created successfully"
+// @Failure      400 {object} string "Invalid input or database error"
+// @Failure      500 {object} string "Referenced user not found"
+// @Router       /requests [post]
 func AddPostRequestHandler(r *chi.Mux, db *pgx.Conn, ctx context.Context) {
 	r.Post("/requests", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Content-Type", "application/json")
