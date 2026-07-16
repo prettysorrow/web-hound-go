@@ -1,7 +1,6 @@
-# web-hound-go-backend
+# web-hound-go
 
-
-ai b2b saas hft crypto startup (claude wrapper)
+Simple web scrapper (WIP)
 
 
 ---
