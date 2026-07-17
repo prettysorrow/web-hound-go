@@ -11,17 +11,21 @@ import (
 	"net/http"
 	"os"
 	"sync"
+	"time"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 	"github.com/rs/zerolog"
 	httpSwagger "github.com/swaggo/http-swagger"
 
 	database "go.mod/database"
 	_ "go.mod/docs"
+	services "go.mod/services"
+
 	github_transport "go.mod/entities/github/transport"
 	requests_transport "go.mod/entities/requests/transport"
+	telegram_transport "go.mod/entities/telegram/transport"
 	users_transport "go.mod/entities/users/transport"
-	services "go.mod/services"
 )
 
 var (
@@ -74,6 +78,8 @@ func main() {
 	r := chi.NewRouter()
 
 	r.Use(services.LoggerMiddleware(logger))
+	r.Use(middleware.Recoverer)
+	r.Use(middleware.Timeout(30 * time.Second))
 
 	ctx := context.Background()
 
@@ -87,6 +93,9 @@ func main() {
 	requests_transport.AddGetRequestHandler(r, db, ctx)
 	requests_transport.AddGetUserRequestsHandler(r, db, ctx)
 	requests_transport.AddPostRequestHandler(r, db, ctx)
+
+	telegram_transport.AddGetUserHandler(r, db, ctx)
+	telegram_transport.AddPostUserHandler(r, db, ctx)
 
 	r.Get("/swagger/*", httpSwagger.Handler())
 
