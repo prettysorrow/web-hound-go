@@ -38,17 +38,17 @@ with open(settings_path, "r") as f:
                     msg=f"unknown service specified in settings: {other} (ignoring)"
                 )
 
-    if "server-port" in settings:
-        port = settings["server-port"]
-        logging.info(msg=f"using port from setting: {port}")
-    else:
-        logging.info(msg=f"using standart port: {port}")
-
     if "server-host" in settings:
         host = settings["server-host"]
         logging.info(msg=f"using host from setting: {host}")
     else:
         logging.info(msg=f"using standart host: {host}")
+
+    if "server-port" in settings:
+        port = settings["server-port"]
+        logging.info(msg=f"using port from setting: {port}")
+    else:
+        logging.info(msg=f"using standart port: {port}")
 
 
 if __name__ == "__main__":
