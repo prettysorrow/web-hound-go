@@ -21,23 +21,29 @@ POSTGRES_DOCKER_CONNECTION = os.environ["POSTGRES_DOCKER_CONNECTION"]
 PGWEB_PORT = os.environ["PGWEB_PORT"]
 PGWEB_SERVICE = os.environ["PGWEB_SERVICE"]
 
+
 def execute(cmd):
-    return subprocess.run(cmd, shell=True, stdout=subprocess.PIPE ,stderr=subprocess.PIPE)
+    return subprocess.run(
+        cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+    )
+
 
 def handle_error(rez):
     print(f"something went wrong")
     print(rez.stderr.decode())
     sys.exit(1)
 
+
 def container_exists(container_name):
     return execute(f"docker inspect {container_name}").returncode == 0
 
-def postgres_server_up ():
+
+def postgres_server_up():
     if container_exists(POSTGRES_CONTAINER):
-        print(f'container {POSTGRES_CONTAINER} already exists')
-        print(f'nothing to do')
+        print(f"container {POSTGRES_CONTAINER} already exists")
+        print(f"nothing to do")
         sys.exit(0)
-    rez = execute(f"docker compose up -d {POSTGRES_SERVICE}")
+    rez = execute(f"docker-compose up -d {POSTGRES_SERVICE}")
     if rez.returncode == 0:
         print(f"service {POSTGRES_SERVICE} started")
         print(f"container name: {POSTGRES_CONTAINER}")
@@ -45,51 +51,63 @@ def postgres_server_up ():
     else:
         handle_error(rez)
 
-def postgres_server_down ():
+
+def postgres_server_down():
     if not container_exists(POSTGRES_CONTAINER):
         print(f"container does not exist")
         print(f"nothing to do")
         sys.exit(0)
-    
-    rez = execute(f"docker compose down {POSTGRES_SERVICE}")
+
+    rez = execute(f"docker-compose down {POSTGRES_SERVICE}")
     if rez.returncode == 0:
         print(f"service {POSTGRES_SERVICE} has been stopped")
         sys.exit(0)
     else:
         handle_error(rez)
-    
+
+
 def postgres_migrate_create(seq):
-    rez = execute(f"docker compose run --rm {MIGRATE_SERVICE} create -ext sql -dir {MIGRATE_DOCKER_PATH} -seq {seq}")
+    rez = execute(
+        f"docker-compose run --rm {MIGRATE_SERVICE} create -ext sql -dir {MIGRATE_DOCKER_PATH} -seq {seq}"
+    )
     if rez.returncode == 0:
         print(f"migration with seq={seq} created at {MIGRATE_HOST_PATH}")
         sys.exit(0)
     else:
         handle_error(rez)
 
-def postgres_migrate_up(n = None):
-    rez = execute(f'docker compose run --rm {MIGRATE_SERVICE} -path {MIGRATE_DOCKER_PATH} -database "{POSTGRES_DOCKER_CONNECTION}" up {n or ""}')
+
+def postgres_migrate_up(n=None):
+    rez = execute(
+        f'docker-compose run --rm {MIGRATE_SERVICE} -path {MIGRATE_DOCKER_PATH} -database "{POSTGRES_DOCKER_CONNECTION}" up {n or ""}'
+    )
     if rez.returncode == 0:
         print(f"{n} new migrations have been applied")
         sys.exit(0)
     else:
         handle_error(rez)
 
-def postgres_migrate_down(n = None):
-    rez = execute(f'docker compose run --rm {MIGRATE_SERVICE} -path {MIGRATE_DOCKER_PATH} -database "{POSTGRES_DOCKER_CONNECTION}" down {n or ""}')
+
+def postgres_migrate_down(n=None):
+    rez = execute(
+        f'docker-compose run --rm {MIGRATE_SERVICE} -path {MIGRATE_DOCKER_PATH} -database "{POSTGRES_DOCKER_CONNECTION}" down {n or ""}'
+    )
     if rez.returncode == 0:
         print(f"last {n} migrations have been reverted")
         sys.exit(0)
     else:
         handle_error(rez)
 
-def postgres_clean_up(n = 1):
-    execute(f"docker compose down {POSTGRES_SERVICE}")
+
+def postgres_clean_up(n=1):
+    execute(f"docker-compose down {POSTGRES_SERVICE}")
     execute(f"rm -rf {POSTGRES_HOST_PATH}")
     sys.exit(0)
 
+
 def postgres_pgweb_up():
     url = f"http://localhost:{PGWEB_PORT}/"
-    execute(f"docker compose up -d {PGWEB_SERVICE}")
+    execute(f"docker-compose up -d {PGWEB_SERVICE}")
     try:
         webbrowser.open(url)
         print(f"started pgweb on {url}")
@@ -99,9 +117,11 @@ def postgres_pgweb_up():
 
     sys.exit(0)
 
+
 def postgres_pgweb_down():
-    execute(f"docker compose down -v {PGWEB_SERVICE}")
+    execute(f"docker-compose down -v {PGWEB_SERVICE}")
     sys.exit(0)
+
 
 def print_usage():
     print("Usage:")
@@ -115,6 +135,7 @@ def print_usage():
     print("  python3 scripts/postgres.py migrate-up <n>          Apply n migrations")
     print("  python3 scripts/postgres.py migrate-down <n>        Revert n migrations")
     print("  python3 scripts/postgres.py migrate-down <n>        Revert n migrations")
+
 
 if __name__ == "__main__":
     argc = len(sys.argv)
