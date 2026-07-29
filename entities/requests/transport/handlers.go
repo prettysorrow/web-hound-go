@@ -78,7 +78,7 @@ func AddGetUserRequestsHandler(r *chi.Mux, db *pgx.Conn, ctx context.Context) {
 			return
 		}
 
-		var requests_dtos []Request
+		requests_dtos := []Request{}
 		for _, request_entity := range requests_entities {
 			request_dto, err := RequestEntityToDto(db, ctx, request_entity)
 			if err != nil {

@@ -100,7 +100,7 @@ func AddGetUsersHandler(r *chi.Mux, db *pgx.Conn, ctx context.Context) {
 			return
 		}
 
-		var user_dtos []User
+		user_dtos := []User{}
 		for _, user_entity := range user_entities {
 			user_dto := UserEntityToDto(&user_entity)
 			user_dtos = append(user_dtos, user_dto)

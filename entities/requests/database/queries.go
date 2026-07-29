@@ -22,7 +22,7 @@ func GetRequest(db *pgx.Conn, ctx context.Context, id int64) (*Request, error) {
 }
 
 func GetUserRequests(db *pgx.Conn, ctx context.Context, user_id int64) ([]Request, error) {
-	var requests []Request
+	requests := []Request{}
 
 	rows, err := db.Query(ctx, "select * from core.request where created_by = $1;", user_id)
 

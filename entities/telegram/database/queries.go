@@ -118,7 +118,7 @@ func SelectProfilePhotos(db *pgx.Conn, ctx context.Context, user_id int64) ([]Ph
 		return nil, fmt.Errorf("failed to select profile photos: %v", err)
 	}
 
-	var photos []Photo
+	photos := []Photo{}
 	for rows.Next() {
 		var photo Photo
 		if err := rows.Scan(&photo.Id, &photo.ImageData); err != nil {
@@ -164,7 +164,7 @@ func SelectChannelPhotos(db *pgx.Conn, ctx context.Context, channel_id int64) ([
 		return nil, fmt.Errorf("failed to select channel photos: %v", err)
 	}
 
-	var photos []Photo
+	photos := []Photo{}
 	for rows.Next() {
 		var photo Photo
 		if err := rows.Scan(&photo.Id, &photo.ImageData); err != nil {
@@ -210,7 +210,7 @@ func SelectChannelPostsPhotos(db *pgx.Conn, ctx context.Context, channel_id int6
 		return nil, fmt.Errorf("failed to select channel posts photos: %v", err)
 	}
 
-	var photos []Photo
+	photos := []Photo{}
 	for rows.Next() {
 		var photo Photo
 		if err := rows.Scan(&photo.Id, &photo.ImageData); err != nil {

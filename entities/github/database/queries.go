@@ -38,7 +38,7 @@ func GetFollowers(db *pgx.Conn, ctx context.Context, user_id int64) ([]User, err
 		return nil, err
 	}
 
-	var followers []User
+	followers := []User{}
 	for rows.Next() {
 		var follower User
 		err := rows.Scan(&follower.Id, &follower.Username, &follower.Pfp)
@@ -65,7 +65,7 @@ func GetFollowees(db *pgx.Conn, ctx context.Context, user_id int64) ([]User, err
 		return nil, err
 	}
 
-	var followees []User
+	followees []User
 	for rows.Next() {
 		var followee User
 		err := rows.Scan(&followee.Id, &followee.Username, &followee.Pfp)

@@ -60,7 +60,7 @@ func GetUsers(db *pgx.Conn, ctx context.Context) ([]User, error) {
 		return nil, fmt.Errorf("failed to select all users: %w", err)
 	}
 
-	var users []User
+	users := []User{}
 	for rows.Next() {
 		var user User
 		err := rows.Scan(&user.Id, &user.DisplayName, &user.UsedService, &user.ServiceId)
