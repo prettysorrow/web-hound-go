@@ -1,5 +1,4 @@
 import { Checkbox } from "@/components/ui/checkbox";
-import { Card } from "@/components/ui/card";
 
 export function WebHoundServices() {
   return (
