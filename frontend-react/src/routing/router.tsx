@@ -1,8 +1,8 @@
-import { createBrowserRouter, Navigate } from "react-router-dom";
-import { FirstPage, PageWithUI, SecondPage } from "./pages";
 import App from "./App";
+import { createBrowserRouter, Navigate } from "react-router-dom";
 import { WebHoundServices } from "@/settings/services";
 import { WebHoundCredentials } from "@/settings/credentials";
+import { WebHoundAbout } from "@/about/about";
 
 const WebHoundRouter = createBrowserRouter([
   {
@@ -10,16 +10,8 @@ const WebHoundRouter = createBrowserRouter([
     element: <App />,
     children: [
       {
-        path: "first-page",
-        element: <FirstPage />,
-      },
-      {
-        path: "second-page",
-        element: <SecondPage />,
-      },
-      {
-        path: "page-with-ui",
-        element: <PageWithUI />,
+        path: "about",
+        element: <WebHoundAbout />,
       },
       {
         path: "settings",
