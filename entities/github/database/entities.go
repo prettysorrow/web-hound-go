@@ -1,12 +1,13 @@
 package webhound_github_database
 
 type User struct {
-	Id       int64  `json:"id"       db:"id"`
-	Username string `json:"username" db:"username"`
-	Pfp      []byte `json:"pfp"   db:"pfp"`
+	Id       int64  `db:"id"`
+	Verbose  bool   `db:"verbose"`
+	Username string `db:"username"`
+	PfpUrl   string `db:"pfp_url"`
 }
 
 type Follows struct {
-	FolloweeId int64 `json:"followee_id" db:"followee_id"`
-	FollowerId int64 `json:"follower_id" db:"follower_id"`
+	FolloweeId int64 `db:"followee_id"`
+	FollowerId int64 `db:"follower_id"`
 }
