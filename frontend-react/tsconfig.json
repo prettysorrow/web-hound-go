@@ -12,11 +12,9 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@/*": [
-        "./src/*"
-      ]
+      "@/*": ["./src/*"]
     },
     "ignoreDeprecations": "6.0"
-    // end shadcn fixing stuff 
+    // end shadcn fixing stuff
   }
 }
