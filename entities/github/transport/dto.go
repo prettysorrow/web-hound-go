@@ -10,7 +10,8 @@ import (
 
 type User struct {
 	Username  string `json:"username"`
-	Pfp       []byte `json:"pfp"`
+	Verbose   bool   `json:"verbose"`
+	PfpUrl    string `json:"pfp_url"`
 	Followers []User `json:"followers"`
 	Followees []User `json:"followees"`
 }
@@ -19,6 +20,15 @@ func GetUserDto(db *pgx.Conn, ctx context.Context, username string) (*User, erro
 	user_entity, err := database.GetUserByUsername(db, ctx, username)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch user @%s: %w", username, err)
+	}
+
+	var user_dto User
+	user_dto.Username = user_entity.Username
+	user_dto.Verbose = user_entity.Verbose
+	user_dto.PfpUrl = user_entity.PfpUrl
+
+	if !user_dto.Verbose { // it means followers and followees are not specified in db
+		return &user_dto, nil
 	}
 
 	followers_entity, err := database.GetFollowers(db, ctx, user_entity.Id)
@@ -31,18 +41,13 @@ func GetUserDto(db *pgx.Conn, ctx context.Context, username string) (*User, erro
 		return nil, fmt.Errorf("failed to fetch followees for user @%s: %w", username, err)
 	}
 
-	var user_dto User
-
-	user_dto.Username = username
-	user_dto.Pfp = user_entity.Pfp
-
 	for _, follower_entity := range followers_entity {
-		follower_dto := User{Username: follower_entity.Username}
+		follower_dto := User{Username: follower_entity.Username, PfpUrl: follower_entity.PfpUrl, Verbose: false}
 		user_dto.Followers = append(user_dto.Followers, follower_dto)
 	}
 
 	for _, followee_entity := range followees_entity {
-		followee_dto := User{Username: followee_entity.Username}
+		followee_dto := User{Username: followee_entity.Username, PfpUrl: followee_entity.PfpUrl, Verbose: false}
 		user_dto.Followees = append(user_dto.Followees, followee_dto)
 	}
 
@@ -50,13 +55,13 @@ func GetUserDto(db *pgx.Conn, ctx context.Context, username string) (*User, erro
 }
 
 func PostUserDto(db *pgx.Conn, ctx context.Context, user_dto *User) (*database.User, error) {
-	user_entity, err := database.PostUser(db, ctx, database.PostUserInput{Username: user_dto.Username, Pfp: user_dto.Pfp})
+	user_entity, err := database.PostUser(db, ctx, database.PostUserInput{Username: user_dto.Username, PfpUrl: user_dto.PfpUrl, Verbose: true})
 	if err != nil {
 		return nil, fmt.Errorf("failed to post user %s: %w", user_dto.Username, err)
 	}
 
 	for _, followee_dto := range user_dto.Followees {
-		followee_entity, err := database.PostUser(db, ctx, database.PostUserInput{Username: followee_dto.Username})
+		followee_entity, err := database.PostUser(db, ctx, database.PostUserInput{Username: followee_dto.Username, PfpUrl: followee_dto.PfpUrl, Verbose: false})
 		if err != nil {
 			return nil, fmt.Errorf("failed to post followee %s for user %s: %w", followee_dto.Username, user_dto.Username, err)
 		}
@@ -68,7 +73,7 @@ func PostUserDto(db *pgx.Conn, ctx context.Context, user_dto *User) (*database.U
 	}
 
 	for _, follower_dto := range user_dto.Followers {
-		follower_entity, err := database.PostUser(db, ctx, database.PostUserInput{Username: follower_dto.Username})
+		follower_entity, err := database.PostUser(db, ctx, database.PostUserInput{Username: follower_dto.Username, PfpUrl: follower_dto.PfpUrl, Verbose: false})
 		if err != nil {
 			return nil, fmt.Errorf("failed to post follower %s for user %s: %w", follower_dto.Username, user_dto.Username, err)
 		}
