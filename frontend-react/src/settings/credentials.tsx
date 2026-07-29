@@ -2,7 +2,7 @@ import { Card } from "@/components/ui/card";
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useReducer, useState } from "react";
+import { useReducer } from "react";
 
 interface CredentialsState {
   telegram: { api_id: string; api_hash: string } | undefined;
