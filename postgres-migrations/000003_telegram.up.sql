@@ -29,13 +29,13 @@ CREATE TABLE telegram.profile_photo (
 );
 
 CREATE TABLE telegram.channel_photo (
-    "photo_id" bigint NOT NULL REFERENCES telegram.photo ("id"),
+    "photo_id"    bigint NOT NULL REFERENCES telegram.photo ("id"),
     "channel_id"  bigint NOT NULL REFERENCES telegram.channel ("id"),
     PRIMARY KEY ("photo_id", "channel_id")
 );
 
 CREATE TABLE telegram.channel_post_photo (
-    "photo_id" bigint NOT NULL REFERENCES telegram.photo ("id"),
+    "photo_id"    bigint NOT NULL REFERENCES telegram.photo ("id"),
     "channel_id"  bigint NOT NULL REFERENCES telegram.channel ("id"),
     PRIMARY KEY ("photo_id", "channel_id")
 );
