@@ -90,7 +90,7 @@ func main() {
 	github_transport.AddGetUserHandler(r, db, ctx)
 	github_transport.AddPostUserHandler(r, db, ctx)
 
-	requests_transport.AddGetRequestHandler(r, db, ctx)
+	requests_transport.AddGetRequestsHandler(r, db, ctx)
 	requests_transport.AddGetUserRequestsHandler(r, db, ctx)
 	requests_transport.AddPostRequestHandler(r, db, ctx)
 
