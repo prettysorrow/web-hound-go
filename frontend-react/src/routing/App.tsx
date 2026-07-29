@@ -1,3 +1,4 @@
+import { WebHoundSettingsDropdownMenu } from "@/settings/settings";
 import { Link, Outlet } from "react-router-dom";
 
 function App() {
@@ -8,6 +9,7 @@ function App() {
         <Link to="/first-page">First Page</Link>
         <Link to="/second-page">Second Page</Link>
         <Link to="/page-with-ui">Page With UI</Link>
+        <WebHoundSettingsDropdownMenu />
       </nav>
       <Outlet />
     </>
