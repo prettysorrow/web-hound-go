@@ -3,7 +3,7 @@ import { GetWebHoundUsers, GetWebHoundRequests } from "@/transport/fetching/webh
 import { GetBackendHealth } from "@/transport/utils/health";
 import { Children, createContext, useContext, type ReactNode } from "react";
 
-const WebHoundDataToFetchContext = createContext<WebHoundDataToFetch | undefined>(undefined);
+// const WebHoundDataToFetchContext = createContext<WebHoundDataToFetch | undefined>(undefined);
 
 // export async function WebHoundFetchingProvider(props: { children: ReactNode }) {
 //   const health = await GetBackendHealth();
@@ -28,23 +28,21 @@ const WebHoundDataToFetchContext = createContext<WebHoundDataToFetch | undefined
 //   return context;
 // }
 
+import FrontendEnvVars from "@/context/env";
+import { WebHoundTesting___WebHoundUsers } from "@/testing-data/webhound-users";
+import { WebHoundTesting___WebHoundRequests } from "@/testing-data/webhound-requests";
+
 export function WebHoundFetchingProvider(props: { children: ReactNode }) {
-  return <>{props.children}</>;
+  return props.children;
 }
 
 export function useWebHoundFetching(): WebHoundDataToFetch {
-  return {
-    users: [
-      { used_service: "gmail", service_id: "1", display_name: "Alice" },
-      { used_service: "telegram", service_id: "2", display_name: "Bob" },
-    ],
-    requests: [
-      {
-        created_at: "10:20",
-        created_on: "Alice",
-        created_by: { used_service: "telegram", service_id: "2", display_name: "Bob" },
-        results: [{ service: "gmail", result: "alice@gmail.com" }],
-      },
-    ],
-  };
+  if (FrontendEnvVars.VITE_USE_TESTING_DATA) {
+    return {
+      users: WebHoundTesting___WebHoundUsers,
+      requests: WebHoundTesting___WebHoundRequests,
+    };
+  }
+
+  throw new Error("not implemented: fetching webhound users and requests");
 }
