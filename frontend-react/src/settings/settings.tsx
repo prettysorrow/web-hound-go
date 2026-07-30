@@ -14,7 +14,6 @@ export function WebHoundSettingsDropdownMenu() {
         <Button>Settings</Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent>
-        <DropdownMenuItem render={<Link to="/settings/services">Services</Link>} />
         <DropdownMenuItem render={<Link to="/settings/credentials">Credentials</Link>} />
       </DropdownMenuContent>
     </DropdownMenu>
