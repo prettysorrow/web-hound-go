@@ -12,12 +12,8 @@ export function WebHoundAdminPanel() {
         <TabsTrigger value="requests">Requests</TabsTrigger>
         <TabsTrigger value="statistics">Statistics</TabsTrigger>
       </TabsList>
-      <TabsContent value={"users"}>
-        <WebHoundUsers users={data.users} />
-      </TabsContent>
-      <TabsContent value={"requests"}>
-        <WebHoundRequests requests={data.requests} />
-      </TabsContent>
+      <TabsContent value={"users"}></TabsContent>
+      <TabsContent value={"requests"}></TabsContent>
       <TabsContent value={"statistics"}>
         <div>some statistics</div>
       </TabsContent>
