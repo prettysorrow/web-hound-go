@@ -12,4 +12,4 @@ export interface GitHubUserVerbose {
   followers: GitHubUser[];
 }
 
-type GitHubUser = GitHubUserShort | GitHubUserVerbose;
+export type GitHubUser = GitHubUserShort | GitHubUserVerbose;
