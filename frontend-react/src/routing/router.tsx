@@ -2,7 +2,7 @@ import App from "./App";
 import { createBrowserRouter, Navigate } from "react-router-dom";
 import { WebHoundCredentials } from "@/settings/credentials";
 import { WebHoundAbout } from "@/about/about";
-import { WebHoundSearch } from "@/seeking/search";
+import { WebHoundSearch } from "@/searching/search";
 import { WebHoundProfile } from "@/settings/profile";
 import { WebHoundRequestsMenu, WebHoundStatisticsMenu, WebHoundUsersMenu } from "@/admin/layouts";
 
