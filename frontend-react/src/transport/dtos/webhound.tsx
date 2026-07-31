@@ -12,8 +12,3 @@ export interface WebHoundRequest {
   created_by: WebHoundUser;
   results: { service: string; result: any }[];
 }
-
-export interface WebHoundDataToFetch {
-  users: WebHoundUser[];
-  requests: WebHoundRequest[];
-}

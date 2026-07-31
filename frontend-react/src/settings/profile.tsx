@@ -1,6 +1,6 @@
 import { ShowServiceIcon, ShowServiceName } from "@/admin/services";
 import { Field, FieldGroup } from "@/components/ui/field";
-import { useWebhoundActiveUser } from "@/hooks/useWebHoundUser";
+import { useWebhoundActiveUser } from "@/hooks/useWebhoundActiveUser";
 
 export function WebHoundProfile() {
   let user = useWebhoundActiveUser();
