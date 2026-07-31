@@ -1,10 +1,6 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { WebHoundUsers, WebHoundRequests } from "../components/entities/webhound";
-import { useWebHoundFetching } from "@/hooks/useFetching";
 
 export function WebHoundAdminPanel() {
-  let data = useWebHoundFetching();
-
   return (
     <Tabs>
       <TabsList>

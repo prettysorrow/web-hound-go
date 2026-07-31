@@ -1,26 +1,28 @@
-import { useWebHoundFetching } from "@/hooks/useFetching";
+import { useWebHoundUsers } from "@/hooks/useWebHoundUsers";
 import { WebHoundRequests, WebHoundUsers } from "@/components/entities/webhound";
 
 import { Field, FieldGroup } from "@/components/ui/field";
+import { useWebHoundRequests } from "@/hooks/useWebHoundRequests";
 
 export function WebHoundUsersMenu() {
-  let data = useWebHoundFetching();
-  return <WebHoundUsers users={data.users} />;
+  let users = useWebHoundUsers();
+  return <WebHoundUsers users={users} />;
 }
 
 export function WebHoundRequestsMenu() {
-  let data = useWebHoundFetching();
-  return <WebHoundRequests requests={data.requests} />;
+  let requests = useWebHoundRequests();
+  return <WebHoundRequests requests={requests} />;
 }
 
 export function WebHoundStatisticsMenu() {
-  let data = useWebHoundFetching();
+  let users = useWebHoundUsers();
+  let requests = useWebHoundRequests();
   return (
     <div className="w-full">
       <FieldGroup className="w-1/3 mx-auto">
         <Field>
-          <div>Users amount: {data.users.length}</div>
-          <div>Requests amount: {data.requests.length}</div>
+          <div>Users amount: {users.length}</div>
+          <div>Requests amount: {requests.length}</div>
         </Field>
       </FieldGroup>
     </div>
