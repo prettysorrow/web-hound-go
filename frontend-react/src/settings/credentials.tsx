@@ -2,14 +2,25 @@ import { Card } from "@/components/ui/card";
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import React, { createContext, useContext, useReducer } from "react";
+import React, { act, createContext, useContext, useReducer } from "react";
 import { type Credentials } from "@/transport/dtos/credentials";
 import { useCredentials } from "@/hooks/useCredentials";
 import { useActiveCredentials } from "@/hooks/useActiveCredentials";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { InstagramIcon, TelegramIcon } from "@hugeicons/core-free-icons";
+import {
+  GameControllerIcon,
+  GameIcon,
+  InstagramIcon,
+  TelegramIcon,
+} from "@hugeicons/core-free-icons";
+import { Button } from "@/components/ui/button";
 
-const InitCredentialsState = { telegram: undefined, instagram: undefined, steam: undefined };
+const InitCredentialsState = {
+  title: "",
+  telegram: undefined,
+  instagram: undefined,
+  steam: undefined,
+};
 
 type CredentialsAction =
   | {
@@ -36,6 +47,10 @@ type CredentialsAction =
   | {
       type: "unset";
       service: "telegram" | "instagram" | "steam";
+    }
+  | {
+      type: "title";
+      title: string;
     };
 
 function reduce(state: Credentials, action: CredentialsAction): Credentials {
@@ -66,6 +81,9 @@ function reduce(state: Credentials, action: CredentialsAction): Credentials {
   if (action.type === "unset" && action.service === "steam") {
     return { ...state, steam: undefined };
   }
+  if (action.type === "title") {
+    return { ...state, title: action.title };
+  }
 
   throw new Error("should not happen");
 }
@@ -81,7 +99,7 @@ function AddCredsProvider(props: { children: React.ReactNode }) {
   return <CredsContext.Provider value={value}>{props.children}</CredsContext.Provider>;
 }
 
-function useCreds() {
+function useNewCreds() {
   let context = useContext(CredsContext);
   if (context === undefined) {
     throw new Error("failed to use credentials context");
@@ -91,7 +109,7 @@ function useCreds() {
 }
 
 function TelegramApiIdInput(props: { api_id: string; api_hash: string }) {
-  let { creds, setCreds } = useCreds();
+  let { creds, setCreds } = useNewCreds();
 
   return (
     <Input
@@ -111,7 +129,7 @@ function TelegramApiIdInput(props: { api_id: string; api_hash: string }) {
 }
 
 function TelegramApiHashInput(props: { api_id: string; api_hash: string }) {
-  let { creds, setCreds } = useCreds();
+  let { creds, setCreds } = useNewCreds();
 
   return (
     <Input
@@ -131,7 +149,7 @@ function TelegramApiHashInput(props: { api_id: string; api_hash: string }) {
 }
 
 function TelegramInputs() {
-  let { creds, setCreds } = useCreds();
+  let { creds, setCreds } = useNewCreds();
   if (creds.telegram !== undefined) {
     return (
       <>
@@ -144,7 +162,7 @@ function TelegramInputs() {
 }
 
 function InstagramLoginInput(props: { login: string; password: string }) {
-  let { creds, setCreds } = useCreds();
+  let { creds, setCreds } = useNewCreds();
   return (
     <Input
       type="text"
@@ -163,7 +181,7 @@ function InstagramLoginInput(props: { login: string; password: string }) {
 }
 
 function InstagramPasswordInput(props: { login: string; password: string }) {
-  let { creds, setCreds } = useCreds();
+  let { creds, setCreds } = useNewCreds();
   return (
     <Input
       type="text"
@@ -182,7 +200,7 @@ function InstagramPasswordInput(props: { login: string; password: string }) {
 }
 
 function InstagramInputs() {
-  let { creds, setCreds } = useCreds();
+  let { creds, setCreds } = useNewCreds();
   if (creds.instagram === undefined) {
     return <></>;
   }
@@ -196,7 +214,7 @@ function InstagramInputs() {
 }
 
 function ServiceCheckboxWithName(props: { service: "telegram" | "instagram" | "steam" }) {
-  let { creds, setCreds } = useCreds();
+  let { creds, setCreds } = useNewCreds();
 
   return (
     <FieldLabel>
@@ -212,34 +230,54 @@ function ServiceCheckboxWithName(props: { service: "telegram" | "instagram" | "s
   );
 }
 
-function AddCredentials() {
+function CredentialsTitleInput() {
+  let { creds, setCreds } = useNewCreds();
   return (
-    <AddCredsProvider>
-      <Card className="w-2/3 mx-auto p-4">
-        <div className="text-lg">Add new credentials</div>
-        <FieldGroup>
-          <Field>
-            <ServiceCheckboxWithName service="telegram" />
-            <TelegramInputs />
-          </Field>
-          <Field>
-            <ServiceCheckboxWithName service="instagram" />
-            <InstagramInputs />
-          </Field>
-        </FieldGroup>
-      </Card>
-    </AddCredsProvider>
+    <Input
+      type="text"
+      value={creds.title}
+      placeholder="Enter credentials title..."
+      onChange={(e) => setCreds({ type: "title", title: e.target.value })}
+    />
+  );
+}
+
+function AddCredentials() {
+  let setAllCreds = useCredentials().setCreds;
+  let newCreds = useNewCreds().creds;
+  return (
+    <Card className="w-2/3 mx-auto p-4">
+      <div className="text-lg">Add new credentials</div>
+      <FieldGroup>
+        <Field>
+          <CredentialsTitleInput />
+        </Field>
+        <Field>
+          <ServiceCheckboxWithName service="telegram" />
+          <TelegramInputs />
+        </Field>
+        <Field>
+          <ServiceCheckboxWithName service="instagram" />
+          <InstagramInputs />
+        </Field>
+        <Field>
+          <Button onClick={() => setAllCreds({ type: "add", creds: newCreds })}>Add</Button>
+        </Field>
+      </FieldGroup>
+    </Card>
   );
 }
 
 function SingleCredentials(props: { credentials: Credentials }) {
-  let CredentialsList: React.ReactNode[] = [];
+  let components: React.ReactNode[] = [];
+
+  components = [...components, <div className="font-semibold mb-2">{props.credentials.title}</div>];
 
   if (props.credentials.telegram !== undefined) {
     let { api_id, api_hash } = props.credentials.telegram;
 
-    CredentialsList = [
-      ...CredentialsList,
+    components = [
+      ...components,
       <div className="flex flex-row gap-2">
         <HugeiconsIcon icon={TelegramIcon} />
         <>API id: {api_id}</>
@@ -254,8 +292,8 @@ function SingleCredentials(props: { credentials: Credentials }) {
   if (props.credentials.instagram !== undefined) {
     let { login, password } = props.credentials.instagram;
 
-    CredentialsList = [
-      ...CredentialsList,
+    components = [
+      ...components,
       <div className="flex flex-row gap-2">
         <HugeiconsIcon icon={InstagramIcon} />
         <>Login: {login}</>
@@ -267,9 +305,21 @@ function SingleCredentials(props: { credentials: Credentials }) {
     ];
   }
 
+  if (props.credentials.steam !== undefined) {
+    let { web_api_key } = props.credentials.steam;
+
+    components = [
+      ...components,
+      <div className="flex flex-row gap-2">
+        <HugeiconsIcon icon={GameControllerIcon} />
+        <>Web API Key: {web_api_key}</>
+      </div>,
+    ];
+  }
+
   return (
     <div className="text-sm bg-gray-100 p-4 rounded ">
-      <div className="flex flex-col gap-2">{...CredentialsList}</div>
+      <div className="flex flex-col gap-2">{...components}</div>
     </div>
   );
 }
@@ -288,8 +338,8 @@ function ActiveCredentials() {
 
 function OtherCredentials() {
   let activeCreds = useActiveCredentials();
-  let allCreds = useCredentials();
-  let otherCreds = allCreds.filter((creds) => creds !== activeCreds);
+  let { creds } = useCredentials();
+  let otherCreds = creds.filter((creds) => creds !== activeCreds);
   return (
     <Card className="w-2/3 mx-auto p-4">
       <div className="text-lg">Your other credentials:</div>
@@ -306,10 +356,12 @@ function OtherCredentials() {
 
 export function WebHoundCredentials() {
   return (
-    <div className="w-full">
-      <ActiveCredentials />
-      <OtherCredentials />
-      <AddCredentials />
+    <div className="w-full pt-4 pb-10">
+      <AddCredsProvider>
+        <ActiveCredentials />
+        <OtherCredentials />
+        <AddCredentials />
+      </AddCredsProvider>
     </div>
   );
 }
