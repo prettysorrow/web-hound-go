@@ -1,7 +1,7 @@
 import FrontendEnvVars from "@/context/env";
 import { EnabledServices, type EnabledServicesType } from "@/searching/enabled-services";
 import { makeSearcher, type Searcher, type SearcherState } from "@/searching/searcher";
-import { WebHoundTesting___Searcher } from "@/testing-data/searcher";
+import { WebHoundTesting___Searcher } from "@/testing/inputs/searcher";
 import React, { createContext, useContext } from "react";
 import { useState } from "react";
 

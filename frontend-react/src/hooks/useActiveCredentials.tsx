@@ -1,5 +1,5 @@
 import FrontendEnvVars from "@/context/env";
-import { WebHoundTesting___ActiveCredentials } from "@/testing-data/active-credentials";
+import { WebHoundTesting___ActiveCredentials } from "@/testing/inputs/active-credentials";
 import type { Credentials } from "@/transport/dtos/credentials";
 
 export function useActiveCredentials(): Credentials {

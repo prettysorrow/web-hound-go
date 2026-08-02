@@ -1,5 +1,5 @@
 import FrontendEnvVars from "@/context/env";
-import { WebHoundTesting___WebHoundRequests } from "@/testing-data/webhound-requests";
+import { WebHoundTesting___WebHoundRequests } from "@/testing/inputs/webhound-requests";
 import type { WebHoundRequest } from "@/transport/dtos/webhound";
 
 export function useWebHoundRequests(): WebHoundRequest[] {
