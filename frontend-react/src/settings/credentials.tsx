@@ -217,16 +217,16 @@ function ServiceCheckboxWithName(props: { service: "telegram" | "instagram" | "s
   let { creds, setCreds } = useNewCreds();
 
   return (
-    <FieldLabel>
-      <div className="flex flex-rows align-center gap-2">
+    <div className="uppercase font-semibold">
+      <label className="flex flex-row items-center gap-2">
         <Checkbox
           onCheckedChange={(checked) =>
             setCreds({ type: checked ? "init" : "unset", service: props.service })
           }
         />
-        <text>{props.service}</text>
-      </div>
-    </FieldLabel>
+        <span>{props.service}</span>
+      </label>
+    </div>
   );
 }
 

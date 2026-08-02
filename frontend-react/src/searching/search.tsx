@@ -17,23 +17,33 @@ export function EnabledServices(props: {
   return (
     <Field>
       <h1>Enabled Services</h1>
-      <div className="grid grid-cols-[auto_auto] gap-x-1 justify-start items-center">
-        <Checkbox
-          onCheckedChange={(checked) => props.setEnabled({ ...props.enabled, github: checked })}
-        />
-        GitHub
-        <Checkbox
-          onCheckedChange={(checked) => props.setEnabled({ ...props.enabled, telegram: checked })}
-        />
-        Telegram
-        <Checkbox
-          onCheckedChange={(checked) => props.setEnabled({ ...props.enabled, instagram: checked })}
-        />
-        Instagram
-        <Checkbox
-          onCheckedChange={(checked) => props.setEnabled({ ...props.enabled, steam: checked })}
-        />
-        Steam
+      <div className="flex flex-col gap-1">
+        <label className="flex flex-row gap-2 items-center">
+          <Checkbox
+            onCheckedChange={(checked) => props.setEnabled({ ...props.enabled, github: checked })}
+          />
+          <span>GitHub</span>
+        </label>
+        <label className="flex flex-row gap-2 items-center">
+          <Checkbox
+            onCheckedChange={(checked) => props.setEnabled({ ...props.enabled, telegram: checked })}
+          />
+          <span>Telegram</span>
+        </label>
+        <label className="flex flex-row gap-2 items-center">
+          <Checkbox
+            onCheckedChange={(checked) =>
+              props.setEnabled({ ...props.enabled, instagram: checked })
+            }
+          />
+          <span>Instagram</span>
+        </label>
+        <label className="flex flex-row gap-2 items-center">
+          <Checkbox
+            onCheckedChange={(checked) => props.setEnabled({ ...props.enabled, steam: checked })}
+          />
+          <span>Steam</span>
+        </label>
       </div>
     </Field>
   );
