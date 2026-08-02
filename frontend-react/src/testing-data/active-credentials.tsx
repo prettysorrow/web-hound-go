@@ -1,6 +1,7 @@
 import type { Credentials } from "@/transport/dtos/credentials";
 
 export const WebHoundTesting___ActiveCredentials: Credentials = {
+  title: "my_credentials_1",
   telegram: {
     api_id: "my_api_id_1",
     api_hash: "my_api_hash_1",
