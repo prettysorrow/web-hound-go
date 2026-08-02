@@ -30,18 +30,20 @@ export function GitHubUserVerbose(props: {
   followees: GitHubUser[];
   followers: GitHubUser[];
 }) {
-  <Card>
-    <CardHeader>
-      <Avatar>
-        <AvatarImage src={props.pfp_url} />
-      </Avatar>
-      <span className="text-lg">{props.username}</span>
-    </CardHeader>
-    <CardContent>
-      <h5>Followees</h5>
-      <ScrollableGithubShortUsers users={props.followees} />
-      <h5>Followers</h5>
-      <ScrollableGithubShortUsers users={props.followers} />
-    </CardContent>
-  </Card>;
+  return (
+    <Card>
+      <CardHeader>
+        <Avatar>
+          <AvatarImage src={props.pfp_url} />
+        </Avatar>
+        <span className="text-lg">{props.username}</span>
+      </CardHeader>
+      <CardContent>
+        <h5>Followees</h5>
+        <ScrollableGithubShortUsers users={props.followees} />
+        <h5>Followers</h5>
+        <ScrollableGithubShortUsers users={props.followers} />
+      </CardContent>
+    </Card>
+  );
 }
