@@ -2,18 +2,17 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Field, FieldLabel, FieldDescription, FieldGroup } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { useSearcher, WithSearcher } from "@/hooks/useSearcher";
 import React, { use, useState } from "react";
-
-interface EnabledServices {
-  github: boolean;
-  telegram: boolean;
-  instagram: boolean;
-  steam: boolean;
-}
+import {
+  type EnabledServicesType,
+  EnabledServices as WebHoundEnabledServices,
+} from "./enabled-services";
+import { GitHubUserVerbose } from "@/results/github";
 
 export function EnabledServices(props: {
-  enabled: EnabledServices;
-  setEnabled: React.Dispatch<React.SetStateAction<EnabledServices>>;
+  enabled: EnabledServicesType;
+  setEnabled: React.Dispatch<React.SetStateAction<EnabledServicesType>>;
 }) {
   return (
     <Field>
@@ -40,30 +39,69 @@ export function EnabledServices(props: {
   );
 }
 
-export function SearchCard(props: { search(username: string): void }) {
-  let [username, setUsername] = useState("");
+export function SearchingResults(props: {
+  username: string;
+  active: boolean;
+  setActive: React.Dispatch<React.SetStateAction<boolean>>;
+}) {
+  function ResultsWindow(_props: { children: React.ReactNode }): React.ReactNode {
+    return (
+      <div className="bg-black/50 w-full h-full fixed top-0 left-0 flex justify-center items-center">
+        <div className="bg-white w-1/3 p-5">
+          <div className="flex justify-end">
+            <Button onClick={() => props.setActive(false)}>Close</Button>
+          </div>
+          <div>{_props.children}</div>
+        </div>
+      </div>
+    );
+  }
 
+  let { searcher, setSearcher } = useSearcher();
+  let result = searcher.searchGitHub(props.username);
+
+  if (!props.active) {
+    return <></>;
+  }
+
+  if (searcher.isLoading) {
+    return <ResultsWindow>Loading...</ResultsWindow>;
+  }
+
+  if (result === undefined) {
+    return <ResultsWindow>Not found.</ResultsWindow>;
+  }
+
+  return (
+    <ResultsWindow>
+      <div>GitHub Results:</div>
+      <GitHubUserVerbose {...result} />
+    </ResultsWindow>
+  );
+}
+
+export function SearchCard(props: {
+  username: string;
+  setUsername: React.Dispatch<React.SetStateAction<string>>;
+  setAreResultsActive: React.Dispatch<React.SetStateAction<boolean>>;
+}) {
   return (
     <FieldGroup>
       <Field orientation="horizontal">
         <Input
           placeholder="Enter username..."
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
+          value={props.username}
+          onChange={(e) => props.setUsername(e.target.value)}
         />
-        <Button variant={"outline"} onClick={() => props.search(username)}>
+        <Button variant={"outline"} onClick={() => props.setAreResultsActive(true)}>
           Search
         </Button>
       </Field>
       <FieldDescription>
-        Searching is performed via username used in different platforms
+        Searching is performed using username used on different platforms
       </FieldDescription>
     </FieldGroup>
   );
-}
-
-function search(username: string) {
-  console.log(`search ${username}`);
 }
 
 export function WebHoundSearch() {
@@ -73,15 +111,28 @@ export function WebHoundSearch() {
     instagram: false,
     steam: false,
   });
+  let [username, setUsername] = useState("");
+  let [areResultsActive, setAreResultsActive] = useState(false);
 
   return (
-    <div className="w-full">
-      <div className="w-1/3 mx-auto">
-        <FieldGroup>
-          <SearchCard search={search} />
-          <EnabledServices enabled={enabledServices} setEnabled={setEnabledServices} />
-        </FieldGroup>
+    <WithSearcher enabledServices={WebHoundEnabledServices}>
+      <div className="w-full min-h-screen flex items-center">
+        <div className="w-1/3 mx-auto">
+          <FieldGroup>
+            <SearchCard
+              username={username}
+              setUsername={setUsername}
+              setAreResultsActive={setAreResultsActive}
+            />
+            <EnabledServices enabled={enabledServices} setEnabled={setEnabledServices} />
+          </FieldGroup>
+        </div>
       </div>
-    </div>
+      <SearchingResults
+        active={areResultsActive}
+        setActive={setAreResultsActive}
+        username={username}
+      />
+    </WithSearcher>
   );
 }
