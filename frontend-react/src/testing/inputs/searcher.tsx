@@ -1,8 +1,8 @@
 import type { Searcher } from "@/searching/searcher";
 import type { GitHubUserVerbose } from "@/transport/dtos/github";
-import { WebHoundTesting___GitHubUsers } from "./github-users";
+import { WebHoundTesting___GitHubUsers } from "./github/users";
 import type { InstagramUserVerbose } from "@/transport/dtos/instagram";
-import { WebHoundTesting___InstagramUsers } from "./instagram-users";
+import { WebHoundTesting___InstagramUsers } from "./instagram/users";
 
 export class WebHoundTesting___Searcher implements Searcher {
   private _isLoading: boolean;
