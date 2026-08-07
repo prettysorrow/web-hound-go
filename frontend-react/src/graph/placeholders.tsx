@@ -1,0 +1,40 @@
+import type { GraphData } from "./dtos";
+
+export const WebHoundSocialGraphDataPlaceHolder: GraphData = {
+  main: {
+    label: "Alice",
+    image: "https://picsum.photos/id/64/200",
+    onClick: () => console.log("Clicked Alice"),
+  },
+  others: [
+    {
+      label: "Bob",
+      image: "https://picsum.photos/id/10/200",
+      onClick: () => console.log("Clicked Bob"),
+    },
+    { label: "Charlie", image: "https://picsum.photos/id/11/200" },
+    { label: "Dave", image: "https://picsum.photos/id/12/200" },
+    { label: "Eva", image: "https://picsum.photos/id/13/200" },
+    { label: "Frank", image: "https://picsum.photos/id/14/200" },
+    { label: "Grace", image: "https://picsum.photos/id/15/200" },
+    { label: "Henry", image: "https://picsum.photos/id/16/200" },
+    { label: "Isabel", image: "https://picsum.photos/id/17/200" },
+    { label: "Jack", image: "https://picsum.photos/id/18/200" },
+    { label: "Karen", image: "https://picsum.photos/id/19/200" },
+    { label: "Leo", image: "https://picsum.photos/id/20/200" },
+    { label: "Maria", image: "https://picsum.photos/id/21/200" },
+    { label: "Nathan", image: "https://picsum.photos/id/22/200" },
+    { label: "Olivia", image: "https://picsum.photos/id/23/200" },
+    { label: "Peter", image: "https://picsum.photos/id/24/200" },
+    { label: "Quinn", image: "https://picsum.photos/id/25/200" },
+    { label: "Rachel", image: "https://picsum.photos/id/26/200" },
+    { label: "Sam", image: "https://picsum.photos/id/27/200" },
+    { label: "Tina", image: "https://picsum.photos/id/28/200" },
+    { label: "Uma", image: "https://picsum.photos/id/29/200" },
+    { label: "Victor", image: "https://picsum.photos/id/30/200" },
+    { label: "Wendy", image: "https://picsum.photos/id/31/200" },
+    { label: "Xavier", image: "https://picsum.photos/id/32/200" },
+    { label: "Yara", image: "https://picsum.photos/id/33/200" },
+    { label: "Zack", image: "https://picsum.photos/id/34/200" },
+  ],
+};
