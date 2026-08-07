@@ -1,13 +1,15 @@
 import { Outlet } from "react-router-dom";
-import { WebHoundNav } from "./nav";
+import { WebHoundNav } from "./routing/nav";
 
 function App() {
-  return (
+  const app = (
     <>
       <WebHoundNav />
       <Outlet />
     </>
   );
+
+  return app;
 }
 
 export default App;
