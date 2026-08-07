@@ -1,5 +1,5 @@
 import { WithCredentials } from "@/hooks/useCredentials";
-import { WebHoundCredentials } from "@/settings/credentials";
+import { WebHoundCredentials } from "@/settings/credentials/show";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
