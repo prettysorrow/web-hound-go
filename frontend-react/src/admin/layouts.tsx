@@ -1,5 +1,5 @@
 import { useWebHoundUsers } from "@/hooks/useWebHoundUsers";
-import { WebHoundRequests, WebHoundUsers } from "@/components/entities/webhound";
+import { WebHoundRequests, WebHoundUsers } from "@/entities/webhound";
 
 import { Field, FieldGroup } from "@/components/ui/field";
 import { useWebHoundRequests } from "@/hooks/useWebHoundRequests";
