@@ -1,20 +1,11 @@
 import type { GitHubUserVerbose } from "@/transport/dtos/github";
-import type { EnabledServicesType } from "./enabled-services";
+import type { InstagramUserVerbose } from "@/transport/dtos/instagram";
 
 export interface Searcher {
   get isLoading(): boolean;
   searchGitHub(username: string): GitHubUserVerbose | undefined;
-}
-
-export type SearcherState = {
-  searcher: Searcher;
-  setSearcher: React.Dispatch<React.SetStateAction<Searcher>>;
-};
-
-export interface SearcherConstructor {
-  new (enabledServices: EnabledServicesType): Searcher;
-}
-
-export function makeSearcher(ctor: SearcherConstructor, enabledServices: EnabledServicesType) {
-  return new ctor(enabledServices);
+  searchInstagram(
+    username: string,
+    credentials: { login: string; password: string },
+  ): InstagramUserVerbose | undefined;
 }
