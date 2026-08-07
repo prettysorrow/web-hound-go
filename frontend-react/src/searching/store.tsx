@@ -1,8 +1,6 @@
 import type { GitHubUserVerbose } from "@/transport/dtos/github";
 import type { InstagramUserVerbose } from "@/transport/dtos/instagram";
 import { create } from "zustand";
-import type { Searcher } from "./searcher";
-import { useSearcher } from "@/hooks/useSearcher";
 import { useWebHoundEnabledServices } from "@/settings/enabled-services/store";
 
 export type WebHoundStore___Searching = {
