@@ -4,7 +4,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { ShowServiceName, ShowServiceIcon } from "@/admin/services";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { GitHubUserVerbose } from "@/results/github";
 
 function WebHoundUser(props: { user: WebHoundUser }) {
   return (
