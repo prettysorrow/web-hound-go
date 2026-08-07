@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { GithubIcon, GoogleIcon, TelegramIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 
-export function WebHoundAbout() {
+export function WebHoundIndex() {
   return (
     <div
       className="grid grid-rows-2 justify-items-center"
