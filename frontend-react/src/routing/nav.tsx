@@ -63,11 +63,6 @@ export function WebHoundNav() {
             </ul>
           </NavigationMenuContent>
         </NavigationMenuItem>
-        <NavigationMenuItem>
-          <NavigationMenuLink>
-            <Link to="/graph">Graph</Link>
-          </NavigationMenuLink>
-        </NavigationMenuItem>
       </NavigationMenuList>
     </NavigationMenu>
   );
