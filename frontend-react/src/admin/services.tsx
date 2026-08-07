@@ -1,7 +1,6 @@
 import { GithubIcon, GoogleIcon, TelegramIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 
-// this shit would not compile if you add another service
 export function ShowServiceName(service: "telegram" | "github" | "gmail") {
   switch (service) {
     case "telegram":
@@ -10,6 +9,9 @@ export function ShowServiceName(service: "telegram" | "github" | "gmail") {
       return "GitHub";
     case "gmail":
       return "Google Mail";
+    default:
+      let _: never = service;
+      throw new Error("should not happen");
   }
 }
 
@@ -21,5 +23,8 @@ export function ShowServiceIcon(props: { service: "telegram" | "gmail" | "github
       return <HugeiconsIcon icon={GoogleIcon} size={props.size} />;
     case "github":
       return <HugeiconsIcon icon={GithubIcon} size={props.size} />;
+    default:
+      let _: never = props.service;
+      throw new Error("should not happen");
   }
 }
