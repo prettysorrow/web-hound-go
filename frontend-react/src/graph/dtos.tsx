@@ -6,5 +6,5 @@ export type PersonData = {
 
 export type GraphData = {
   main: PersonData;
-  others: PersonData[];
+  others: { person: PersonData; kind: "to" | "by" }[];
 };
