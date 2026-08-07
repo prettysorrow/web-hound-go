@@ -1,7 +1,7 @@
 import { http, HttpResponse } from "msw";
-import { WebHoundTesting___WebHoundUsers } from "../inputs/webhound-users";
-import { WebHoundTesting___WebHoundRequests } from "../inputs/webhound-requests";
-import { WebHoundTesting___Credentials } from "../inputs/credentials";
+import { WebHoundTesting___WebHoundUsers } from "../inputs/webhound/users";
+import { WebHoundTesting___WebHoundRequests } from "../inputs/webhound/requests";
+import { WebHoundTesting___Credentials } from "../inputs/credentials/all";
 import type { WebHoundUser } from "@/transport/dtos/webhound";
 
 function findWebHoundUser(params: {

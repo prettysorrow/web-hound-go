@@ -1,5 +1,5 @@
 import FrontendEnvVars from "@/context/env";
-import { WebHoundTesting___WebHoundUsers } from "@/testing/inputs/webhound-users";
+import { WebHoundTesting___WebHoundUsers } from "@/testing/inputs/webhound/users";
 import type { WebHoundUser } from "@/transport/dtos/webhound";
 
 export function useWebHoundUsers(): WebHoundUser[] {
