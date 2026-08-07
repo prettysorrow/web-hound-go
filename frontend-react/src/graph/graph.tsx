@@ -7,6 +7,7 @@ import {
   type Edge,
   type NodeProps,
   type NodeTypes,
+  MarkerType,
 } from "@xyflow/react";
 import {
   forceSimulation,
@@ -21,9 +22,10 @@ import {
 import "@xyflow/react/dist/style.css";
 
 import type { PersonData, GraphData } from "./dtos";
+import { MiddleArrowEdge } from "./custom-edge";
 
 export type ImageNodeData = PersonData & {
-  center?: boolean;
+  kind: "main" | "to" | "by";
 };
 type ImageNode = Node<ImageNodeData, "image">;
 type SimulationImageNode = ImageNode & SimulationNodeDatum;
@@ -33,7 +35,7 @@ const CENTER_NODE_SIZE = 120;
 const LABEL_EXTRA_HEIGHT = 30;
 
 function ImageNodeComponent({ data }: NodeProps<ImageNode>) {
-  const size = data.center ? CENTER_NODE_SIZE : NODE_SIZE;
+  const size = data.kind === "main" ? CENTER_NODE_SIZE : NODE_SIZE;
   const imageCenterY = size / 2;
 
   return (
@@ -88,7 +90,16 @@ function ImageNodeComponent({ data }: NodeProps<ImageNode>) {
           height: size,
           borderRadius: "50%",
           objectFit: "cover",
-          border: data.center ? "4px solid #2563eb" : "3px solid white",
+          border: (() => {
+            switch (data.kind) {
+              case "main":
+                return "4px solid pink";
+              case "by":
+                return "3px solid green";
+              case "to":
+                return "3px solid blue";
+            }
+          })(),
           boxShadow: "0 4px 15px rgba(0,0,0,.25)",
         }}
       />
@@ -108,10 +119,6 @@ function ImageNodeComponent({ data }: NodeProps<ImageNode>) {
   );
 }
 
-const nodeTypes: NodeTypes = {
-  image: ImageNodeComponent,
-};
-
 function buildPersonGraph({ main, others }: GraphData): { nodes: ImageNode[]; edges: Edge[] } {
   const nodeDims = (center?: boolean) => {
     const w = center ? CENTER_NODE_SIZE : NODE_SIZE;
@@ -123,15 +130,15 @@ function buildPersonGraph({ main, others }: GraphData): { nodes: ImageNode[]; ed
     type: "image",
     position: { x: 0, y: 0 },
     ...nodeDims(true),
-    data: { label: main.label, image: main.image, onClick: main.onClick, center: true },
+    data: { label: main.label, image: main.image, onClick: main.onClick, kind: "main" },
   };
 
-  const otherNodes: ImageNode[] = others.map((person, i) => ({
+  const otherNodes: ImageNode[] = others.map(({ person, kind }, i) => ({
     id: `${i + 2}`,
     type: "image",
     position: { x: 0, y: 0 },
     ...nodeDims(false),
-    data: { label: person.label, image: person.image, onClick: person.onClick },
+    data: { label: person.label, image: person.image, onClick: person.onClick, kind: kind },
   }));
 
   const nodes: ImageNode[] = [mainNode, ...otherNodes];
@@ -140,12 +147,24 @@ function buildPersonGraph({ main, others }: GraphData): { nodes: ImageNode[]; ed
     id: `${mainNode.id}-${node.id}`,
     source: mainNode.id,
     target: node.id,
+    style: {
+      stroke: (() => {
+        switch (node.data.kind) {
+          case "by":
+            return "green";
+          case "to":
+            return "blue";
+        }
+      })(),
+      strokeWidth: 2,
+    },
+    data: { kind: node.data.kind },
     sourceHandle: "center-source",
     targetHandle: "center-target",
   }));
 
   const simulationNodes: SimulationImageNode[] = nodes.map((node) => {
-    const isCenter = node.data.center === true;
+    const isCenter = node.data.kind === "main";
     return {
       ...node,
       x: isCenter ? 500 : 500 + (Math.random() - 0.5) * 600,
@@ -212,14 +231,15 @@ export function WebHoundSocialGraph({ main, others }: GraphData) {
   const { nodes, edges } = buildPersonGraph({ main, others });
 
   return (
-    <div style={{ width: "100vw", height: "100vh" }}>
+    <div style={{ width: "50vw", height: "50vh", padding: "4px" }}>
       <ReactFlow<ImageNode, Edge>
         nodes={nodes}
         edges={edges}
-        nodeTypes={nodeTypes}
+        edgeTypes={{ middle: MiddleArrowEdge }}
+        nodeTypes={{ image: ImageNodeComponent }}
         fitView
         defaultEdgeOptions={{
-          type: "straight",
+          type: "middle",
           style: {
             stroke: "black",
             strokeWidth: 2,
