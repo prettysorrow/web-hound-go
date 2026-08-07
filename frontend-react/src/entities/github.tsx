@@ -27,16 +27,16 @@ function ScrollableGithubShortUsers(props: { users: GitHubUser[] }) {
 export function GitHubResults() {
   const { github } = useWebHoundSearchingStore();
 
+  if (github === undefined) {
+    throw new Error("add WithActualResults before calling this shit");
+  }
+
   if (github === "Disabled") {
     return <div>GitHub searching is disabled.</div>;
   }
 
   if (github === "Not found") {
     return <div>GitHub info not found</div>;
-  }
-
-  if (github === undefined) {
-    throw new Error("add WithActualResults before calling this shit");
   }
 
   return (

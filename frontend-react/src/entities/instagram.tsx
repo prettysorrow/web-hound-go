@@ -6,6 +6,10 @@ import { BoxWithUsernameRef } from "./box-with-username-ref";
 export function InstagramResults() {
   const { instagram } = useWebHoundSearchingStore();
 
+  if (instagram === undefined) {
+    throw new Error("add WithActualResults before calling this shit");
+  }
+
   if (instagram === "Disabled") {
     return <div>Instagram searching is disabled.</div>;
   }
@@ -16,10 +20,6 @@ export function InstagramResults() {
 
   if (instagram === "No credentials") {
     return <div>Instagram info is not available due to credentials settings.</div>;
-  }
-
-  if (instagram === undefined) {
-    throw new Error("add WithActualResults before calling this shit");
   }
 
   if (instagram.kind === "private") {
