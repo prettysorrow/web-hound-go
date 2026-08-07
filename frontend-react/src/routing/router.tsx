@@ -1,10 +1,13 @@
-import App from "./App";
+import App from "../App";
 import { createBrowserRouter, Navigate } from "react-router-dom";
-import { WebHoundCredentials } from "@/settings/credentials";
-import { WebHoundAbout } from "@/about/about";
+import { WebHoundCredentials } from "@/settings/credentials/show";
+import { WebHoundIndex } from "@/index";
 import { WebHoundSearch } from "@/searching/search";
 import { WebHoundProfile } from "@/settings/profile";
 import { WebHoundRequestsMenu, WebHoundStatisticsMenu, WebHoundUsersMenu } from "@/admin/layouts";
+import { WebHoundSocialGraph } from "@/graph/graph";
+import { WebHoundSocialGraphDataPlaceHolder } from "@/graph/placeholders";
+import { WebHoundEnabledServices } from "@/settings/enabled-services/panel";
 
 const WebHoundRouter = createBrowserRouter([
   {
@@ -12,8 +15,8 @@ const WebHoundRouter = createBrowserRouter([
     element: <App />,
     children: [
       {
-        path: "about",
-        element: <WebHoundAbout />,
+        index: true,
+        element: <WebHoundIndex />,
       },
       {
         path: "search",
@@ -34,6 +37,10 @@ const WebHoundRouter = createBrowserRouter([
           {
             path: "credentials",
             element: <WebHoundCredentials />,
+          },
+          {
+            path: "searching",
+            element: <WebHoundEnabledServices />,
           },
         ],
       },
@@ -58,6 +65,10 @@ const WebHoundRouter = createBrowserRouter([
             element: <WebHoundStatisticsMenu />,
           },
         ],
+      },
+      {
+        path: "graph",
+        element: <WebHoundSocialGraph {...WebHoundSocialGraphDataPlaceHolder} />,
       },
     ],
   },
