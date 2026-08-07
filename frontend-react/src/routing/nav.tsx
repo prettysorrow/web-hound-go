@@ -14,7 +14,7 @@ export function WebHoundNav() {
       <NavigationMenuList>
         <NavigationMenuItem>
           <NavigationMenuLink>
-            <Link to="/about">About</Link>
+            <Link to="/">Home</Link>
           </NavigationMenuLink>
         </NavigationMenuItem>
 
@@ -31,6 +31,11 @@ export function WebHoundNav() {
               <li>
                 <NavigationMenuLink>
                   <Link to="/settings/profile">Profile</Link>
+                </NavigationMenuLink>
+              </li>
+              <li>
+                <NavigationMenuLink>
+                  <Link to="/settings/searching">Searching</Link>
                 </NavigationMenuLink>
               </li>
               <li>
@@ -57,6 +62,11 @@ export function WebHoundNav() {
               </NavigationMenuLink>
             </ul>
           </NavigationMenuContent>
+        </NavigationMenuItem>
+        <NavigationMenuItem>
+          <NavigationMenuLink>
+            <Link to="/graph">Graph</Link>
+          </NavigationMenuLink>
         </NavigationMenuItem>
       </NavigationMenuList>
     </NavigationMenu>
