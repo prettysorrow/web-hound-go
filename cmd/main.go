@@ -38,6 +38,18 @@ func failwith(err error) {
 	os.Exit(1)
 }
 
+// @Summary      Health check
+// @Description  Check whether the backend server is up and running
+// @Tags         utils
+// @Produce      json
+// @Success      200 {object} string "Backend server is healthy"
+// @Router       /api/health [get]
+func HealthHandler(w http.ResponseWriter, _ *http.Request) {
+	w.Header().Add("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("{}"))
+}
+
 func GetBackendServerAddressFromEnv() (*string, error) {
 	backend_server_host := "BACKEND_SERVER_HOST"
 	backend_server_port := "BACKEND_SERVER_PORT"
@@ -75,13 +87,16 @@ func main() {
 	if err != nil {
 		failwith(err)
 	}
+	defer db.Close()
 
 	r := chi.NewRouter()
 
+	r.Use(services.CorsMiddleware)
 	r.Use(services.LoggerMiddleware(logger))
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.Timeout(30 * time.Second))
-	r.Use(middleware.Heartbeat("/api/health"))
+
+	r.Get("/api/health", HealthHandler)
 
 	ctx := context.Background()
 
@@ -91,6 +106,8 @@ func main() {
 
 	github_transport.AddGetUserHandler(r, db, ctx)
 	github_transport.AddPostUserHandler(r, db, ctx)
+	github_transport.AddGetUsersHandler(r, db, ctx)
+	github_transport.AddGetUsersHandler(r, db, ctx)
 
 	requests_transport.AddGetRequestsHandler(r, db, ctx)
 	requests_transport.AddGetUserRequestsHandler(r, db, ctx)
