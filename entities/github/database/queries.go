@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type RowScanner interface {
@@ -15,7 +15,35 @@ func scanUser(src RowScanner, dest *User) error {
 	return (src).Scan(&dest.Id, &dest.Verbose, &dest.Username, &dest.PfpUrl)
 }
 
-func GetUserById(db *pgx.Conn, ctx context.Context, id int64) (*User, error) {
+func GetUsers(db *pgxpool.Pool, ctx context.Context) ([]User, error) {
+	var users []User
+	rows, err := db.Query(ctx, "select * from github.user;")
+
+	if err != nil {
+		err = fmt.Errorf("failed to select github users from database: %w", err)
+		return nil, err
+	}
+
+	for rows.Next() {
+		var user User
+		err := scanUser(rows, &user)
+		if err != nil {
+			err = fmt.Errorf("failed to select github users from database: failed to scan a single user: %w", err)
+			return nil, err
+		}
+
+		users = append(users, user)
+	}
+
+	if err := rows.Err(); err != nil {
+		err = fmt.Errorf("failed to select github users from database: failed to scan github users: %w", err)
+		return nil, err
+	}
+
+	return users, nil
+}
+
+func GetUserById(db *pgxpool.Pool, ctx context.Context, id int64) (*User, error) {
 	var user User
 	row := db.QueryRow(ctx, "select * from github.user where id = $1;", id)
 	err := scanUser(row, &user)
@@ -27,7 +55,7 @@ func GetUserById(db *pgx.Conn, ctx context.Context, id int64) (*User, error) {
 	return &user, nil
 }
 
-func GetUserByUsername(db *pgx.Conn, ctx context.Context, username string) (*User, error) {
+func GetUserByUsername(db *pgxpool.Pool, ctx context.Context, username string) (*User, error) {
 	var user User
 	row := db.QueryRow(ctx, "select * from github.user where username = $1;", username)
 	err := scanUser(row, &user)
@@ -39,7 +67,7 @@ func GetUserByUsername(db *pgx.Conn, ctx context.Context, username string) (*Use
 	return &user, nil
 }
 
-func GetFollowers(db *pgx.Conn, ctx context.Context, user_id int64) ([]User, error) {
+func GetFollowers(db *pgxpool.Pool, ctx context.Context, user_id int64) ([]User, error) {
 	rows, err := db.Query(ctx, "select * from github.user where id in (select follower_id as id from github.follows where followee_id = $1);", user_id)
 	if err != nil {
 		err = fmt.Errorf("failed to select followers for user with user_id=%d: %w", user_id, err)
@@ -66,7 +94,7 @@ func GetFollowers(db *pgx.Conn, ctx context.Context, user_id int64) ([]User, err
 	return followers, nil
 }
 
-func GetFollowees(db *pgx.Conn, ctx context.Context, user_id int64) ([]User, error) {
+func GetFollowees(db *pgxpool.Pool, ctx context.Context, user_id int64) ([]User, error) {
 	rows, err := db.Query(ctx, "select * from github.user where id in (select followee_id as id from github.follows where follower_id = $1);", user_id)
 	if err != nil {
 		err = fmt.Errorf("failed to select followees for user with user_id=%d: %w", user_id, err)
@@ -99,7 +127,7 @@ type PostUserInput struct {
 	PfpUrl   string
 }
 
-func PostUser(db *pgx.Conn, ctx context.Context, input PostUserInput) (*User, error) {
+func PostUser(db *pgxpool.Pool, ctx context.Context, input PostUserInput) (*User, error) {
 	var user User
 	row := db.QueryRow(ctx, `insert into github.user (username, "verbose", pfp_url) values ($1, $2, $3) returning id, "verbose", username, pfp_url;`, input.Username, input.Verbose, input.PfpUrl)
 	err := scanUser(row, &user)
@@ -116,7 +144,7 @@ type PostFollowsInput struct {
 	Follower int64
 }
 
-func PostFollows(db *pgx.Conn, ctx context.Context, input PostFollowsInput) (*Follows, error) {
+func PostFollows(db *pgxpool.Pool, ctx context.Context, input PostFollowsInput) (*Follows, error) {
 	var follows Follows
 	row := db.QueryRow(ctx, "insert into github.follows (followee_id, follower_id) values ($1, $2) returning followee_id, follower_id;", input.Followee, input.Follower)
 	err := row.Scan(&follows.FolloweeId, &follows.FollowerId)
