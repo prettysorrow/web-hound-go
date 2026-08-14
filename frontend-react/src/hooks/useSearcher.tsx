@@ -1,5 +1,6 @@
 import FrontendEnvVars from "@/context/env";
 import { type Searcher } from "@/searching/searcher";
+import { WebHoundBackend___Searcher } from "@/searching/backend-searcher";
 import { WebHoundTesting___Searcher } from "@/testing/inputs/searcher";
 import React, { createContext, useContext } from "react";
 import { useState } from "react";
@@ -11,7 +12,7 @@ export function WithSearcher(props: { children: React.ReactNode }) {
   if (FrontendEnvVars.VITE_USE_TESTING_DATA) {
     initSearcher = new WebHoundTesting___Searcher();
   } else {
-    throw new Error("not implemented: withsearcher");
+    initSearcher = new WebHoundBackend___Searcher();
   }
 
   const [searcher, setSearcher] = useState(initSearcher);

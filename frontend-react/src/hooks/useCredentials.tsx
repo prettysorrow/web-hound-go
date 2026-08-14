@@ -29,7 +29,7 @@ export function WithCredentials(props: { children: React.ReactNode }) {
   if (FrontendEnvVars.VITE_USE_TESTING_DATA) {
     initCreds = WebHoundTesting___Credentials;
   } else {
-    throw new Error("not implemented: credentials context");
+    initCreds = [];
   }
 
   let [creds, setCreds] = useReducer(reduce, initCreds);
