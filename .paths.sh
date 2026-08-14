@@ -20,6 +20,9 @@ export MIGRATE_DOCKER_PATH="/migrations"
 export BACKEND_SERVER_HOST="localhost"
 export BACKEND_SERVER_PORT="8080"
 
+export FETCHING_SERVER_HOST="127.0.0.1"
+export FETCHING_SERVER_PORT="8090"
+
 export SWAG_SERVER_PORT="6767"
 
 export PGWEB_SERVICE="pgweb"
