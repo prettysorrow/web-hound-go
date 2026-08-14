@@ -21,6 +21,8 @@ test("search for alex on github and instagram", async ({ page }) => {
 
   await page.screenshot({ path: "screenshots/search-for-alex-on-github-and-instagram.png" });
 
+  await page.getByRole("button", { name: "details" }).click();
+
   const github = page.locator("*", { hasText: "GitHub profile", hasNotText: "Instagram profile" });
   const githubFollowees = github.locator("*", { hasText: "Followees" });
   const githubFollowers = github.locator("*", { hasText: "Followers" });
@@ -40,9 +42,9 @@ test("search for alex on github and instagram", async ({ page }) => {
   const instagramFollowers = instagram.locator("*", { hasText: "Followers" });
 
   await expect(instagram.getByText("alex")).toBeVisible();
-  await expect(instagramFollowees.getByText("buddy")).toBeVisible();
-  await expect(instagramFollowees.getByText("wander")).toBeVisible();
-  await expect(instagramFollowers.getByText("mike")).toBeVisible();
-  await expect(instagramFollowers.getByText("nature")).toBeVisible();
-  await expect(instagramFollowers.getByText("city")).toBeVisible();
+  await expect(instagramFollowees.getByText("mike")).toBeVisible();
+  await expect(instagramFollowees.getByText("nature")).toBeVisible();
+  await expect(instagramFollowees.getByText("city")).toBeVisible();
+  await expect(instagramFollowers.getByText("buddy")).toBeVisible();
+  await expect(instagramFollowers.getByText("wander")).toBeVisible();
 });
