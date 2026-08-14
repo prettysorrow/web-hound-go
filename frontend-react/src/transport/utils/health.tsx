@@ -5,7 +5,7 @@ const base_url = FrontendEnvVars.VITE_BACKEND_API_URL;
 
 export async function GetBackendHealth(): Promise<{ kind: "ok" } | { kind: "err"; msg: string }> {
   try {
-    const response = await axios.get(`${base_url}/health`);
+    const response = await axios.get(`${base_url}/api/health`);
     if (response.status != 200) {
       return { kind: "err", msg: response.statusText };
     }
