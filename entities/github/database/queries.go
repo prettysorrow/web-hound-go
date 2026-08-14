@@ -2,8 +2,10 @@ package webhound_github_database
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -129,7 +131,7 @@ type PostUserInput struct {
 
 func PostUser(db *pgxpool.Pool, ctx context.Context, input PostUserInput) (*User, error) {
 	var user User
-	row := db.QueryRow(ctx, `insert into github.user (username, "verbose", pfp_url) values ($1, $2, $3) returning id, "verbose", username, pfp_url;`, input.Username, input.Verbose, input.PfpUrl)
+	row := db.QueryRow(ctx, `insert into github.user (username, "verbose", pfp_url) values ($1, $2, $3) on conflict (username) do update set pfp_url = excluded.pfp_url, "verbose" = case when github.user."verbose" then github.user."verbose" else excluded."verbose" end returning id, "verbose", username, pfp_url;`, input.Username, input.Verbose, input.PfpUrl)
 	err := scanUser(row, &user)
 	if err != nil {
 		err = fmt.Errorf("failed to insert github user with username=%s: %w", input.Username, err)
@@ -146,8 +148,11 @@ type PostFollowsInput struct {
 
 func PostFollows(db *pgxpool.Pool, ctx context.Context, input PostFollowsInput) (*Follows, error) {
 	var follows Follows
-	row := db.QueryRow(ctx, "insert into github.follows (followee_id, follower_id) values ($1, $2) returning followee_id, follower_id;", input.Followee, input.Follower)
+	row := db.QueryRow(ctx, "insert into github.follows (followee_id, follower_id) values ($1, $2) on conflict do nothing returning followee_id, follower_id;", input.Followee, input.Follower)
 	err := row.Scan(&follows.FolloweeId, &follows.FollowerId)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return &follows, nil
+	}
 	if err != nil {
 		err = fmt.Errorf("failed to insert follows for users with ids %d and %d: %w", input.Followee, input.Follower, err)
 		return nil, err
