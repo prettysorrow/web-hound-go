@@ -14,7 +14,7 @@ CREATE TABLE telegram.user (
     "last_name"  text      NULL,
     "phone"      text      NULL,
     "bio"        text      NULL, 
-    "channel_id" bigint REFERENCES telegram.channel ("id")
+    "channel_id" bigint    REFERENCES telegram.channel ("id")
 );
 
 CREATE TABLE telegram.photo (
