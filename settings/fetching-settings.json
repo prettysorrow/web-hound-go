@@ -1,6 +1,4 @@
 {
    "__description__": "settings for fetching module",
-   "server-host": "127.0.0.1",
-   "server-port": 8090,
    "enabled-services": [ "github", "instagram" ]
 }
