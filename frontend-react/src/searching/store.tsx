@@ -8,8 +8,10 @@ export type WebHoundStore___Searching = {
   github: GitHubUserVerbose | "Not found" | "Disabled" | undefined;
   instagram: InstagramUserVerbose | "Not found" | "No credentials" | "Disabled" | undefined;
   setUsername(username: string): void;
-  setGitHub(value: GitHubUserVerbose | "Not found" | "Disabled"): void;
-  setInstagram(user: InstagramUserVerbose | "Not found" | "No credentials" | "Disabled"): void;
+  setGitHub(value: GitHubUserVerbose | "Not found" | "Disabled" | undefined): void;
+  setInstagram(
+    user: InstagramUserVerbose | "Not found" | "No credentials" | "Disabled" | undefined,
+  ): void;
 };
 
 export const useWebHoundSearchingStore = create<WebHoundStore___Searching>((set) => {

@@ -16,31 +16,54 @@ export function WithActualResults(props: { children: React.ReactNode }) {
       return;
     }
 
-    if (enabled.github) {
-      const github = searcher.searchGitHub(username);
-      if (github !== undefined) {
-        setGitHub(github);
-      } else {
-        setGitHub("Not found");
+    const target = username;
+    let cancelled = false;
+
+    setGitHub(undefined);
+    setInstagram(undefined);
+
+    async function search() {
+      if (enabled.github) {
+        const github = await searcher.searchGitHub(target);
+        if (!cancelled) {
+          if (github !== undefined) {
+            setGitHub(github);
+          } else {
+            setGitHub("Not found");
+          }
+        }
+      } else if (!cancelled) {
+        setGitHub("Disabled");
       }
-    } else {
-      setGitHub("Disabled");
+
+      if (enabled.instagram) {
+        if (
+          searcher.requiresInstagramCredentials &&
+          (activeCreds === undefined || activeCreds.instagram === undefined)
+        ) {
+          if (!cancelled) {
+            setInstagram("No credentials");
+          }
+        } else {
+          const instagram = await searcher.searchInstagram(target, activeCreds?.instagram);
+          if (!cancelled) {
+            if (instagram !== undefined) {
+              setInstagram(instagram);
+            } else {
+              setInstagram("Not found");
+            }
+          }
+        }
+      } else if (!cancelled) {
+        setInstagram("Disabled");
+      }
     }
 
-    if (enabled.instagram) {
-      if (activeCreds === undefined || activeCreds.instagram === undefined) {
-        setInstagram("No credentials");
-      } else {
-        const instagram = searcher.searchInstagram(username, activeCreds.instagram);
-        if (instagram !== undefined) {
-          setInstagram(instagram);
-        } else {
-          setInstagram("Not found");
-        }
-      }
-    } else {
-      setInstagram("Disabled");
-    }
+    search();
+
+    return () => {
+      cancelled = true;
+    };
   }, [username]);
 
   if (username === undefined) {

@@ -3,9 +3,10 @@ import type { InstagramUserVerbose } from "@/transport/dtos/instagram";
 
 export interface Searcher {
   get isLoading(): boolean;
-  searchGitHub(username: string): GitHubUserVerbose | undefined;
+  requiresInstagramCredentials: boolean;
+  searchGitHub(username: string): Promise<GitHubUserVerbose | undefined>;
   searchInstagram(
     username: string,
-    credentials: { login: string; password: string },
-  ): InstagramUserVerbose | undefined;
+    credentials?: { login: string; password: string },
+  ): Promise<InstagramUserVerbose | undefined>;
 }

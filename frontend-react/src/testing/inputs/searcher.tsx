@@ -15,11 +15,15 @@ export class WebHoundTesting___Searcher implements Searcher {
     return this._isLoading;
   }
 
-  public searchGitHub(username: string): GitHubUserVerbose | undefined {
+  get requiresInstagramCredentials(): boolean {
+    return true;
+  }
+
+  public async searchGitHub(username: string): Promise<GitHubUserVerbose | undefined> {
     return WebHoundTesting___GitHubUsers.find((user) => user.username === username);
   }
 
-  public searchInstagram(username: string): InstagramUserVerbose | undefined {
+  public async searchInstagram(username: string): Promise<InstagramUserVerbose | undefined> {
     return WebHoundTesting___InstagramUsers.find((user) => user.username === username);
   }
 }
