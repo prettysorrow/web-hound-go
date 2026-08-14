@@ -8,10 +8,11 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	webhound_fetching "go.mod/services/fetching"
 )
 
 // @Summary      Get GitHub user by username
-// @Description  Retrieve a GitHub user profile including followers and followees
+// @Description  Retrieve a GitHub user profile including followers and followees. Reads from the database first, falls back to the external fetching service when the user is not cached.
 // @Tags         github
 // @Accept       json
 // @Produce      json
@@ -19,16 +20,16 @@ import (
 // @Success      200 {object} webhound_github_transport.User "GitHub user found"
 // @Failure      400 {object} string "User not found or database error"
 // @Router       /api/github/users/{username} [get]
-func AddGetUserHandler(r *chi.Mux, db *pgxpool.Pool, ctx context.Context) {
+func AddGetUserHandler(r *chi.Mux, db *pgxpool.Pool, fetching *webhound_fetching.Client, ctx context.Context) {
 	r.Get("/api/github/users/{username}", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Content-Type", "application/json")
 		encoder := json.NewEncoder(w)
 
 		username := chi.URLParam(r, "username")
 
-		user_dto, err := GetUserDto(db, ctx, username)
+		user_dto, err := GetUserDtoOrFetch(db, ctx, fetching, username)
 		if err != nil {
-			err = fmt.Errorf("failed to fetch user @%s from database for GET /github/users/{username}: %w", username, err)
+			err = fmt.Errorf("failed to fetch user @%s for GET /github/users/{username}: %w", username, err)
 			w.WriteHeader(http.StatusBadRequest)
 			encoder.Encode(err.Error())
 			return
