@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 	database "go.mod/entities/github/database"
 )
 
@@ -16,7 +16,7 @@ type User struct {
 	Followees []User `json:"followees"`
 }
 
-func GetUserDto(db *pgx.Conn, ctx context.Context, username string) (*User, error) {
+func GetUserDto(db *pgxpool.Pool, ctx context.Context, username string) (*User, error) {
 	user_entity, err := database.GetUserByUsername(db, ctx, username)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch user @%s: %w", username, err)
@@ -54,7 +54,7 @@ func GetUserDto(db *pgx.Conn, ctx context.Context, username string) (*User, erro
 	return &user_dto, nil
 }
 
-func PostUserDto(db *pgx.Conn, ctx context.Context, user_dto *User) (*database.User, error) {
+func PostUserDto(db *pgxpool.Pool, ctx context.Context, user_dto *User) (*database.User, error) {
 	user_entity, err := database.PostUser(db, ctx, database.PostUserInput{Username: user_dto.Username, PfpUrl: user_dto.PfpUrl, Verbose: true})
 	if err != nil {
 		return nil, fmt.Errorf("failed to post user %s: %w", user_dto.Username, err)
@@ -85,4 +85,24 @@ func PostUserDto(db *pgx.Conn, ctx context.Context, user_dto *User) (*database.U
 	}
 
 	return user_entity, nil
+}
+
+func GetUsersDto(db *pgxpool.Pool, ctx context.Context) ([]*User, error) {
+	users_entities, err := database.GetUsers(db, ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch users: %w", err)
+	}
+
+	users := []*User{}
+	for _, user_entity := range users_entities {
+		user_dto, err := GetUserDto(db, ctx, user_entity.Username)
+
+		if err != nil {
+			return nil, fmt.Errorf("failed to fetch users: failed to fetch a single user: %w", err)
+		}
+
+		users = append(users, user_dto)
+	}
+
+	return users, nil
 }
