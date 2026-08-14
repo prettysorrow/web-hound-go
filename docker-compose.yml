@@ -24,6 +24,6 @@ services:
     ports:
       - ${PGWEB_PORT}:8081
     environment:
-      - PGWEB_DATABASE_URL=${POSTGRES_DOCKER_CONNECTION}
+      - PGWEB_DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_SERVICE}:${POSTGRES_DOCKER_PORT}/${POSTGRES_DB}?sslmode=disable
     depends_on:
       - postgres-server
