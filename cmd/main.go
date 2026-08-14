@@ -21,6 +21,7 @@ import (
 	database "go.mod/database"
 	_ "go.mod/docs"
 	services "go.mod/services"
+	webhound_config "go.mod/services/config"
 
 	github_transport "go.mod/entities/github/transport"
 	instagram_transport "go.mod/entities/instagram/transport"
@@ -52,21 +53,11 @@ func HealthHandler(w http.ResponseWriter, _ *http.Request) {
 }
 
 func GetBackendServerAddressFromEnv() (*string, error) {
-	backend_server_host := "BACKEND_SERVER_HOST"
-	backend_server_port := "BACKEND_SERVER_PORT"
+	host := webhound_config.GetString("BACKEND_SERVER_HOST")
+	port := webhound_config.GetString("BACKEND_SERVER_PORT")
 
-	host := os.Getenv(backend_server_host)
-	port := os.Getenv(backend_server_port)
-
-	if host == "" {
-		err := errors.New("failed to get server host from env")
-		logger.Fatal().Err(err).Str("env_var_name", backend_server_host).Msg("")
-		return nil, err
-	}
-	if port == "" {
-		err := errors.New("failed to get server port from env")
-		logger.Fatal().Err(err).Str("env_var_name", backend_server_port).Msg("")
-		return nil, err
+	if host == "" || port == "" {
+		return nil, errors.New("BACKEND_SERVER_HOST or BACKEND_SERVER_PORT is not set or empty")
 	}
 
 	addr := fmt.Sprintf("%s:%s", host, port)
@@ -74,14 +65,11 @@ func GetBackendServerAddressFromEnv() (*string, error) {
 }
 
 func GetFetchingServerAddressFromEnv() string {
-	fetching_server_host := "FETCHING_SERVER_HOST"
-	fetching_server_port := "FETCHING_SERVER_PORT"
-
-	host := os.Getenv(fetching_server_host)
+	host := webhound_config.GetString("FETCHING_SERVER_HOST")
 	if host == "" {
 		host = "127.0.0.1"
 	}
-	port := os.Getenv(fetching_server_port)
+	port := webhound_config.GetString("FETCHING_SERVER_PORT")
 	if port == "" {
 		port = "8090"
 	}
@@ -90,6 +78,10 @@ func GetFetchingServerAddressFromEnv() string {
 }
 
 func main() {
+	if err := webhound_config.Init(); err != nil {
+		failwith(err)
+	}
+
 	server_addr, err := GetBackendServerAddressFromEnv()
 	if err != nil {
 		failwith(err)

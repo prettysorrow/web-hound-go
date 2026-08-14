@@ -3,9 +3,10 @@ package webhound_database
 import (
 	"context"
 	"fmt"
-	"os"
+	"net/url"
 
 	"github.com/jackc/pgx/v5/pgxpool"
+	webhound_config "go.mod/services/config"
 )
 
 func Connect(connection_uri string) (*pgxpool.Pool, error) {
@@ -24,11 +25,22 @@ func Connect(connection_uri string) (*pgxpool.Pool, error) {
 }
 
 func GetConnectionStringFromEnv() (*string, error) {
-	cs := os.Getenv("POSTGRES_HOST_CONNECTION")
-	if cs == "" {
-		err := fmt.Errorf("postgresql connection string is not set or empty")
+	user := webhound_config.GetString("POSTGRES_USER")
+	password := webhound_config.GetString("POSTGRES_PASSWORD")
+	database_name := webhound_config.GetString("POSTGRES_DB")
+	port := webhound_config.GetString("POSTGRES_HOST_PORT")
+
+	if user == "" || password == "" || database_name == "" || port == "" {
+		err := fmt.Errorf("postgresql settings are not set or empty (POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_DB, POSTGRES_HOST_PORT)")
 		return nil, err
 	}
 
+	cs := fmt.Sprintf(
+		"postgres://%s:%s@localhost:%s/%s?sslmode=disable",
+		url.QueryEscape(user),
+		url.QueryEscape(password),
+		port,
+		url.QueryEscape(database_name),
+	)
 	return &cs, nil
 }
