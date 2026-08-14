@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-func GetRequest(db *pgx.Conn, ctx context.Context, id int64) (*Request, error) {
+func GetRequest(db *pgxpool.Pool, ctx context.Context, id int64) (*Request, error) {
 	var request Request
 
 	row := db.QueryRow(ctx, "select * from core.request where id = $1;", id)
@@ -21,7 +21,7 @@ func GetRequest(db *pgx.Conn, ctx context.Context, id int64) (*Request, error) {
 	return &request, nil
 }
 
-func GetRequests(db *pgx.Conn, ctx context.Context) ([]Request, error) {
+func GetRequests(db *pgxpool.Pool, ctx context.Context) ([]Request, error) {
 	requests := []Request{}
 
 	rows, err := db.Query(ctx, "select * from core.request;")
@@ -52,7 +52,7 @@ func GetRequests(db *pgx.Conn, ctx context.Context) ([]Request, error) {
 	return requests, nil
 }
 
-func GetUserRequests(db *pgx.Conn, ctx context.Context, user_id int64) ([]Request, error) {
+func GetUserRequests(db *pgxpool.Pool, ctx context.Context, user_id int64) ([]Request, error) {
 	requests := []Request{}
 
 	rows, err := db.Query(ctx, "select * from core.request where created_by = $1;", user_id)
@@ -89,7 +89,7 @@ type PostRequestInput struct {
 	ResultsIds []int64
 }
 
-func PostRequest(db *pgx.Conn, ctx context.Context, input PostRequestInput) (*Request, error) {
+func PostRequest(db *pgxpool.Pool, ctx context.Context, input PostRequestInput) (*Request, error) {
 	var request Request
 
 	row := db.QueryRow(ctx, "insert into core.request (created_on, created_by, results_ids) values ($1, $2, $3) returning id, created_at, created_on, created_by, results_ids;", input.CreatedOn, input.CreatedBy, input.ResultsIds)
@@ -103,7 +103,7 @@ func PostRequest(db *pgx.Conn, ctx context.Context, input PostRequestInput) (*Re
 	return &request, nil
 }
 
-func GetResultsByIds(db *pgx.Conn, ctx context.Context, resultsIds []int64) ([]Result, error) {
+func GetResultsByIds(db *pgxpool.Pool, ctx context.Context, resultsIds []int64) ([]Result, error) {
 	results := []Result{}
 
 	rows, err := db.Query(ctx, "select * from core.result where core.result.id = any($1);", resultsIds)
@@ -134,7 +134,7 @@ type PostResultRequest struct {
 	UserId  string
 }
 
-func PostResult(db *pgx.Conn, ctx context.Context, request PostResultRequest) (*Result, error) {
+func PostResult(db *pgxpool.Pool, ctx context.Context, request PostResultRequest) (*Result, error) {
 	var result Result
 	row := db.QueryRow(ctx, "insert into core.result (service, user_id) values ($1, $2) returning id, service, user_id;", request.Service, request.UserId)
 	err := row.Scan(&result.Id, &result.Service, &result.UserId)

@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 func scanUser(dest *User, row pgx.Row) error {
@@ -21,7 +22,7 @@ type InsertUserRequest struct {
 	ChannelId *int64
 }
 
-func InsertUser(db *pgx.Conn, ctx context.Context, request *InsertUserRequest) (*User, error) {
+func InsertUser(db *pgxpool.Pool, ctx context.Context, request *InsertUserRequest) (*User, error) {
 	if request == nil {
 		return nil, errors.New("failed to insert user: unexpected null ptr")
 	}
@@ -35,7 +36,7 @@ func InsertUser(db *pgx.Conn, ctx context.Context, request *InsertUserRequest) (
 	return &user, nil
 }
 
-func SelectUserById(db *pgx.Conn, ctx context.Context, id int64) (*User, error) {
+func SelectUserById(db *pgxpool.Pool, ctx context.Context, id int64) (*User, error) {
 	var user User
 	err := scanUser(&user, db.QueryRow(ctx, "select id, username, first_name, last_name, phone, bio, channel_id from telegram.user where id = $1 ;", id))
 	if err != nil {
@@ -45,7 +46,7 @@ func SelectUserById(db *pgx.Conn, ctx context.Context, id int64) (*User, error) 
 	return &user, nil
 }
 
-func SelectUserByUsername(db *pgx.Conn, ctx context.Context, username string) (*User, error) {
+func SelectUserByUsername(db *pgxpool.Pool, ctx context.Context, username string) (*User, error) {
 	var user User
 	err := scanUser(&user, db.QueryRow(ctx, "select id, username, first_name, last_name, phone, bio, channel_id from telegram.user where username = $1 ;", username))
 	if err != nil {
@@ -65,7 +66,7 @@ type InsertChannelRequest struct {
 	Bio  *string
 }
 
-func InsertChannel(db *pgx.Conn, ctx context.Context, request *InsertChannelRequest) (*Channel, error) {
+func InsertChannel(db *pgxpool.Pool, ctx context.Context, request *InsertChannelRequest) (*Channel, error) {
 	if request == nil {
 		return nil, errors.New("failed to insert channel: unexpected null ptr")
 	}
@@ -80,7 +81,7 @@ func InsertChannel(db *pgx.Conn, ctx context.Context, request *InsertChannelRequ
 	return &channel, nil
 }
 
-func SelectChannelById(db *pgx.Conn, ctx context.Context, id int64) (*Channel, error) {
+func SelectChannelById(db *pgxpool.Pool, ctx context.Context, id int64) (*Channel, error) {
 	var channel Channel
 	if err := scanChannel(&channel, db.QueryRow(ctx, "select id, url, name, bio from telegram.channel where id = $1;", id)); err != nil {
 		return nil, fmt.Errorf("failed to select channel: %v", err)
@@ -94,7 +95,7 @@ type InsertProfilePhotoRequest struct {
 	ImageData []byte
 }
 
-func InsertProfilePhoto(db *pgx.Conn, ctx context.Context, request *InsertProfilePhotoRequest) (*ProfilePhoto, error) {
+func InsertProfilePhoto(db *pgxpool.Pool, ctx context.Context, request *InsertProfilePhotoRequest) (*ProfilePhoto, error) {
 	if request == nil {
 		return nil, errors.New("failed to insert profile photo: unexpected null ptr")
 	}
@@ -112,7 +113,7 @@ func InsertProfilePhoto(db *pgx.Conn, ctx context.Context, request *InsertProfil
 	return &profile_photo, nil
 }
 
-func SelectProfilePhotos(db *pgx.Conn, ctx context.Context, user_id int64) ([]Photo, error) {
+func SelectProfilePhotos(db *pgxpool.Pool, ctx context.Context, user_id int64) ([]Photo, error) {
 	rows, err := db.Query(ctx, "select telegram.photo.id, telegram.photo.image_data from telegram.profile_photo left join telegram.photo on telegram.profile_photo.photo_id = telegram.photo.id where telegram.profile_photo.user_id = $1 ;", user_id)
 	if err != nil {
 		return nil, fmt.Errorf("failed to select profile photos: %v", err)
@@ -140,7 +141,7 @@ type InsertChannelPhotoRequest struct {
 	ImageData []byte
 }
 
-func InsertChannelPhoto(db *pgx.Conn, ctx context.Context, request *InsertChannelPhotoRequest) (*ChannelPhoto, error) {
+func InsertChannelPhoto(db *pgxpool.Pool, ctx context.Context, request *InsertChannelPhotoRequest) (*ChannelPhoto, error) {
 	if request == nil {
 		return nil, errors.New("failed to insert channel photo: unexpected null ptr")
 	}
@@ -158,7 +159,7 @@ func InsertChannelPhoto(db *pgx.Conn, ctx context.Context, request *InsertChanne
 	return &channel_photo, nil
 }
 
-func SelectChannelPhotos(db *pgx.Conn, ctx context.Context, channel_id int64) ([]Photo, error) {
+func SelectChannelPhotos(db *pgxpool.Pool, ctx context.Context, channel_id int64) ([]Photo, error) {
 	rows, err := db.Query(ctx, "select telegram.photo.id, telegram.photo.image_data from telegram.channel_photo left join telegram.photo on telegram.channel_photo.photo_id = telegram.photo.id where telegram.channel_photo.channel_id = $1 ;", channel_id)
 	if err != nil {
 		return nil, fmt.Errorf("failed to select channel photos: %v", err)
@@ -186,7 +187,7 @@ type InsertChannelPostPhotoRequest struct {
 	ImageData []byte
 }
 
-func InsertChannelPostPhoto(db *pgx.Conn, ctx context.Context, request *InsertChannelPostPhotoRequest) (*ChannelPostPhoto, error) {
+func InsertChannelPostPhoto(db *pgxpool.Pool, ctx context.Context, request *InsertChannelPostPhotoRequest) (*ChannelPostPhoto, error) {
 	if request == nil {
 		return nil, errors.New("failed to insert channel post photo: unexpected null ptr")
 	}
@@ -204,7 +205,7 @@ func InsertChannelPostPhoto(db *pgx.Conn, ctx context.Context, request *InsertCh
 	return &channel_post_photo, nil
 }
 
-func SelectChannelPostsPhotos(db *pgx.Conn, ctx context.Context, channel_id int64) ([]Photo, error) {
+func SelectChannelPostsPhotos(db *pgxpool.Pool, ctx context.Context, channel_id int64) ([]Photo, error) {
 	rows, err := db.Query(ctx, "select telegram.photo.id, telegram.photo.image_data from telegram.channel_post_photo left join telegram.photo on telegram.channel_post_photo.photo_id = telegram.photo.id where telegram.channel_post_photo.channel_id = $1 ;", channel_id)
 	if err != nil {
 		return nil, fmt.Errorf("failed to select channel posts photos: %v", err)

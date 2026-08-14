@@ -7,7 +7,7 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 	database "go.mod/entities/users/database"
 )
 
@@ -21,7 +21,7 @@ import (
 // @Success      200 {object} webhound_users_transport.User "User found"
 // @Failure      400 {object} string "User not found or invalid parameters"
 // @Router       /users/{used_service}/{service_id} [get]
-func AddGetUserHandler(r *chi.Mux, db *pgx.Conn, ctx context.Context) {
+func AddGetUserHandler(r *chi.Mux, db *pgxpool.Pool, ctx context.Context) {
 	r.Get("/users/{used_service}/{service_id}", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		encoder := json.NewEncoder(w)
@@ -50,7 +50,7 @@ func AddGetUserHandler(r *chi.Mux, db *pgx.Conn, ctx context.Context) {
 // @Success      200 {object} webhound_users_transport.User "User created successfully"
 // @Failure      400 {object} string "Invalid input or database error"
 // @Router       /users [post]
-func AddPostUserHandler(r *chi.Mux, db *pgx.Conn, ctx context.Context) {
+func AddPostUserHandler(r *chi.Mux, db *pgxpool.Pool, ctx context.Context) {
 	r.Post("/users", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Content-Type", "application/json")
 		encoder := json.NewEncoder(w)
@@ -86,7 +86,7 @@ func AddPostUserHandler(r *chi.Mux, db *pgx.Conn, ctx context.Context) {
 // @Success      200 {array} webhound_users_transport.User "List of users"
 // @Failure      400 {object} string "Database error"
 // @Router       /users [get]
-func AddGetUsersHandler(r *chi.Mux, db *pgx.Conn, ctx context.Context) {
+func AddGetUsersHandler(r *chi.Mux, db *pgxpool.Pool, ctx context.Context) {
 	r.Get("/users", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Content-Type", "application/json")
 		encoder := json.NewEncoder(w)

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 	database "go.mod/entities/requests/database"
 	users_database "go.mod/entities/users/database"
 	users "go.mod/entities/users/transport"
@@ -23,7 +23,7 @@ type Result struct {
 	UserId  string `json:"user_id"`
 }
 
-func RequestEntityToDto(db *pgx.Conn, ctx context.Context, request_entity database.Request) (*Request, error) {
+func RequestEntityToDto(db *pgxpool.Pool, ctx context.Context, request_entity database.Request) (*Request, error) {
 	created_by, err := users.GetUserByIdDto(db, ctx, request_entity.CreatedBy)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch request with id=%d: failed to fetch user with id=%d: %w", request_entity.Id, request_entity.CreatedBy, err)
@@ -42,7 +42,7 @@ func RequestEntityToDto(db *pgx.Conn, ctx context.Context, request_entity databa
 	return &Request{CreatedOn: request_entity.CreatedOn, CreatedBy: created_by, Results: results_dtos}, nil
 }
 
-func PostRequest(db *pgx.Conn, ctx context.Context, request Request) (*database.Request, error) {
+func PostRequest(db *pgxpool.Pool, ctx context.Context, request Request) (*database.Request, error) {
 	results_ids := []int64{}
 
 	for _, result_dto := range request.Results {

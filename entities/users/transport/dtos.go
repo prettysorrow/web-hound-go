@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 	database "go.mod/entities/users/database"
 )
 
@@ -23,7 +23,7 @@ type GetUserDtoInput struct {
 	ServiceId   string
 }
 
-func GetUserDto(db *pgx.Conn, ctx context.Context, input GetUserDtoInput) (*User, error) {
+func GetUserDto(db *pgxpool.Pool, ctx context.Context, input GetUserDtoInput) (*User, error) {
 	user_entity, err := database.GetUser(db, ctx, database.GetUserInput{UsedService: input.UsedService, ServiceId: input.ServiceId})
 	if err != nil {
 		return nil, fmt.Errorf("failed to get user with (service, service id) = (%s, %s): %w", input.UsedService, input.ServiceId, err)
@@ -33,7 +33,7 @@ func GetUserDto(db *pgx.Conn, ctx context.Context, input GetUserDtoInput) (*User
 	return &user_dto, nil
 }
 
-func GetUserByIdDto(db *pgx.Conn, ctx context.Context, id int64) (*User, error) {
+func GetUserByIdDto(db *pgxpool.Pool, ctx context.Context, id int64) (*User, error) {
 	user_entity, err := database.GetUserById(db, ctx, id)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get user with id = %d: %w", id, err)
@@ -43,7 +43,7 @@ func GetUserByIdDto(db *pgx.Conn, ctx context.Context, id int64) (*User, error) 
 	return &user_dto, nil
 }
 
-func PostUserDto(db *pgx.Conn, ctx context.Context, user *User) (*database.User, error) {
+func PostUserDto(db *pgxpool.Pool, ctx context.Context, user *User) (*database.User, error) {
 	db_input := database.PostUserInput{DisplayName: user.DisplayName, UsedService: user.UsedService, ServiceId: user.ServiceId}
 	user_entity, err := database.PostUser(db, ctx, db_input)
 	if err != nil {

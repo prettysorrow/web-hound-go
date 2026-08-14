@@ -8,7 +8,7 @@ import (
 	"strconv"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 	database "go.mod/entities/requests/database"
 )
 
@@ -21,7 +21,7 @@ import (
 // @Success      200 {array} webhound_requests_transport.Request "List of user requests"
 // @Failure      400 {object} string "Invalid ID or database error"
 // @Router       /users/{id}/requests [get]
-func AddGetUserRequestsHandler(r *chi.Mux, db *pgx.Conn, ctx context.Context) {
+func AddGetUserRequestsHandler(r *chi.Mux, db *pgxpool.Pool, ctx context.Context) {
 	r.Get("/users/{id}/requests", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Content-Type", "application/json")
 		encoder := json.NewEncoder(w)
@@ -70,7 +70,7 @@ func AddGetUserRequestsHandler(r *chi.Mux, db *pgx.Conn, ctx context.Context) {
 // @Failure      400 {object} string "Invalid input or database error"
 // @Failure      500 {object} string "Referenced user not found"
 // @Router       /requests [post]
-func AddPostRequestHandler(r *chi.Mux, db *pgx.Conn, ctx context.Context) {
+func AddPostRequestHandler(r *chi.Mux, db *pgxpool.Pool, ctx context.Context) {
 	r.Post("/requests", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Content-Type", "application/json")
 		encoder := json.NewEncoder(w)
@@ -98,7 +98,15 @@ func AddPostRequestHandler(r *chi.Mux, db *pgx.Conn, ctx context.Context) {
 	})
 }
 
-func AddGetRequestsHandler(r *chi.Mux, db *pgx.Conn, ctx context.Context) {
+// @Summary      List all requests
+// @Description  Retrieve all requests created by any user
+// @Tags         requests
+// @Accept       json
+// @Produce      json
+// @Success      200 {array} webhound_requests_transport.Request "List of requests"
+// @Failure      500 {object} string "Database error"
+// @Router       /requests [get]
+func AddGetRequestsHandler(r *chi.Mux, db *pgxpool.Pool, ctx context.Context) {
 	r.Get("/requests", func(w http.ResponseWriter, r *http.Request) {
 		r.Header.Add("Content-Type", "application/json")
 		encoder := json.NewEncoder(w)
