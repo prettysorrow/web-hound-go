@@ -1,6 +1,6 @@
-CREATE SCHEMA core;
+CREATE SCHEMA webhound;
 
-CREATE TABLE core.user (
+CREATE TABLE webhound.user (
     id             serial   PRIMARY KEY,
     display_name   text     NOT NULL,
     used_service   text     NOT NULL CHECK (used_service IN ( 'telegram', 'gmail', 'github' )),
@@ -8,10 +8,10 @@ CREATE TABLE core.user (
     UNIQUE (used_service, service_id)
 );
 
-CREATE TABLE core.request (
+CREATE TABLE webhound.request (
     id           bigserial     PRIMARY KEY,
     created_at   timestamptz   NOT NULL DEFAULT now(),
     created_on   text          NOT NULL,
-    created_by   bigint        NOT NULL REFERENCES core.user (id),
+    created_by   bigint        NOT NULL REFERENCES webhound.user (id),
     results_ids  bigint[]      NOT NULL DEFAULT '{}'
 );
