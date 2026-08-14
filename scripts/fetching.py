@@ -3,10 +3,12 @@
 import os
 import subprocess
 import sys
-import time
-import webbrowser
 
-ROOT_DIR = os.path.join(os.path.dirname(__file__), "..")
+from scripts.env import load_env_file
+
+load_env_file()
+
+ROOT_DIR = os.environ["REPO_ROOT"]
 
 
 def execute(cmd):
@@ -15,30 +17,7 @@ def execute(cmd):
     )
 
 
-def load_env():
-    secrets = os.path.join(ROOT_DIR, ".secrets.sh")
-    paths = os.path.join(ROOT_DIR, ".paths.sh")
-
-    for env_file in (secrets, paths):
-        if not os.path.exists(env_file):
-            continue
-        for line in open(env_file):
-            line = line.strip()
-            if not line.startswith("export "):
-                continue
-            body = line[len("export "):]
-            name, _, value = body.partition("=")
-            value = value.strip()
-            if value.startswith('"') and value.endswith('"'):
-                value = value[1:-1]
-            os.environ.setdefault(name, value)
-
-
 def start_server():
-    load_env()
-
-    os.environ.setdefault("REPO_ROOT", ROOT_DIR)
-
     interpreter = os.path.join(ROOT_DIR, "fetching", "venv", "bin", "python")
     if not os.path.exists(interpreter):
         interpreter = "python3"
@@ -51,9 +30,11 @@ def start_server():
 
 def print_usage():
     print("Usage:")
-    print("  python scripts/fetching.py server    Start the external fetching service (FastAPI)")
+    print(
+        "  python scripts/fetching.py server    Start the external fetching service (FastAPI)"
+    )
     print("")
-    print("Reads FETCHING_SERVER_HOST and FETCHING_SERVER_PORT from .paths.sh")
+    print("Reads FETCHING_SERVER_HOST and FETCHING_SERVER_PORT from the root .env file")
 
 
 if __name__ == "__main__":

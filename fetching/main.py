@@ -1,14 +1,20 @@
 #!/usr/bin/env python3
 
-from fastapi import FastAPI
-import logging
-import uvicorn
 import os
 import json
 
-host, port = "127.0.0.1", 8080
+from dotenv import load_dotenv
+
+load_dotenv()
+
+from fastapi import FastAPI
+import logging
+import uvicorn
 
 settings_path = f"{os.environ["REPO_ROOT"]}/settings/fetching-settings.json"
+
+host = os.environ.get("FETCHING_SERVER_HOST", "127.0.0.1")
+port = os.environ.get("FETCHING_SERVER_PORT", "8090")
 
 app = FastAPI()
 
@@ -43,18 +49,6 @@ with open(settings_path, "r") as f:
                 msg=f"failed to enable service {service}: {ex} (skipping)"
             )
 
-    if "server-host" in settings:
-        host = settings["server-host"]
-        logging.info(msg=f"using host from setting: {host}")
-    else:
-        logging.info(msg=f"using standart host: {host}")
-
-    if "server-port" in settings:
-        port = settings["server-port"]
-        logging.info(msg=f"using port from setting: {port}")
-    else:
-        logging.info(msg=f"using standart port: {port}")
-
 
 if __name__ == "__main__":
-    uvicorn.run(app=app, port=port, host=host)
+    uvicorn.run(app=app, port=int(port), host=host)

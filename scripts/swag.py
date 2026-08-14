@@ -9,12 +9,18 @@ import sys
 import time
 import webbrowser
 
-ROOT_DIR = os.path.join(os.path.dirname(__file__), "..")
+from scripts.env import load_env_file
+
+load_env_file()
+
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DOCS_DIR = os.path.join(ROOT_DIR, "docs")
 
 
 def execute(cmd):
-    return subprocess.run(cmd, shell=True, cwd=ROOT_DIR, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    return subprocess.run(
+        cmd, shell=True, cwd=ROOT_DIR, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+    )
 
 
 def find_transport_dirs():
@@ -28,7 +34,9 @@ def generate():
     dirs_arg = ",".join(rel_dirs)
 
     print(f"scanning: {dirs_arg}")
-    rez = execute(f"swag init --dir {dirs_arg} --output ./docs --parseDependency --parseInternal")
+    rez = execute(
+        f"swag init --dir {dirs_arg} --output ./docs --parseDependency --parseInternal"
+    )
     if rez.returncode != 0:
         print("swag init failed:")
         print(rez.stderr.decode())
@@ -98,10 +106,14 @@ def dev():
 def print_usage():
     print("Usage:")
     print("  python scripts/swag.py generate   Generate swagger docs")
-    print("  python scripts/swag.py dev        Generate docs, launch backend, open /swagger/")
+    print(
+        "  python scripts/swag.py dev        Generate docs, launch backend, open /swagger/"
+    )
     print("")
     print("Dev mode reads BACKEND_SERVER_HOST and BACKEND_SERVER_PORT from env")
-    print("It searches swagger annotations in all 'REPO_ROOT/entities/*/transport/' directories")
+    print(
+        "It searches swagger annotations in all 'REPO_ROOT/entities/*/transport/' directories"
+    )
 
 
 if __name__ == "__main__":

@@ -5,6 +5,10 @@ import sys
 import subprocess
 import webbrowser
 
+from scripts.env import load_env_file
+
+load_env_file()
+
 POSTGRES_SERVICE = os.environ["POSTGRES_SERVICE"]
 POSTGRES_CONTAINER = os.environ["POSTGRES_CONTAINER"]
 MIGRATE_SERVICE = os.environ["MIGRATE_SERVICE"]
@@ -16,10 +20,19 @@ MIGRATE_DOCKER_PATH = os.environ["MIGRATE_DOCKER_PATH"]
 POSTGRES_HOST_PATH = os.environ["POSTGRES_HOST_PATH"]
 POSTGRES_DOCKER_PATH = os.environ["POSTGRES_DOCKER_PATH"]
 
-POSTGRES_DOCKER_CONNECTION = os.environ["POSTGRES_DOCKER_CONNECTION"]
+POSTGRES_USER = os.environ["POSTGRES_USER"]
+POSTGRES_PASSWORD = os.environ["POSTGRES_PASSWORD"]
+POSTGRES_DB = os.environ["POSTGRES_DB"]
+
+POSTGRES_DOCKER_PORT = os.environ["POSTGRES_DOCKER_PORT"]
 
 PGWEB_PORT = os.environ["PGWEB_PORT"]
 PGWEB_SERVICE = os.environ["PGWEB_SERVICE"]
+
+POSTGRES_DOCKER_CONNECTION = (
+    f"postgres://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_SERVICE}:"
+    f"{POSTGRES_DOCKER_PORT}/{POSTGRES_DB}?sslmode=disable"
+)
 
 
 def execute(cmd):
