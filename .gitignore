@@ -1,5 +1,5 @@
+.env
 postgres-db/
-.secrets.sh
 .vscode
 docs/
 __pycache__
