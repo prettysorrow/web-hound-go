@@ -23,6 +23,7 @@ import (
 	services "go.mod/services"
 
 	github_transport "go.mod/entities/github/transport"
+	instagram_transport "go.mod/entities/instagram/transport"
 	requests_transport "go.mod/entities/requests/transport"
 	telegram_transport "go.mod/entities/telegram/transport"
 	users_transport "go.mod/entities/users/transport"
@@ -80,6 +81,7 @@ func main() {
 	r.Use(services.LoggerMiddleware(logger))
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.Timeout(30 * time.Second))
+	r.Use(middleware.Heartbeat("/api/health"))
 
 	ctx := context.Background()
 
@@ -96,6 +98,9 @@ func main() {
 
 	telegram_transport.AddGetUserHandler(r, db, ctx)
 	telegram_transport.AddPostUserHandler(r, db, ctx)
+
+	instagram_transport.AddGetInstagramUserHandler(r, db, ctx)
+	instagram_transport.AddPostInstagramUser(r, db, ctx)
 
 	r.Get("/swagger/*", httpSwagger.Handler())
 
