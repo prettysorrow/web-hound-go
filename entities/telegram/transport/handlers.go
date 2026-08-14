@@ -7,12 +7,22 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 	database "go.mod/entities/telegram/database"
 	services "go.mod/services"
 )
 
-func AddPostUserHandler(r *chi.Mux, db *pgx.Conn, ctx context.Context) {
+// @Summary      Create a Telegram user
+// @Description  Register a new Telegram user with an optional channel and photos
+// @Tags         telegram
+// @Accept       json
+// @Produce      json
+// @Param        user body webhound_telegram_transport.User true "Telegram user data"
+// @Success      200 {object} webhound_telegram_transport.User "Telegram user created successfully"
+// @Failure      400 {object} string "Invalid input"
+// @Failure      500 {object} string "Database error"
+// @Router       /telegram/users [post]
+func AddPostUserHandler(r *chi.Mux, db *pgxpool.Pool, ctx context.Context) {
 	r.Post("/telegram/users", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Content-Type", "application/json")
 
@@ -130,7 +140,17 @@ func AddPostUserHandler(r *chi.Mux, db *pgx.Conn, ctx context.Context) {
 	})
 }
 
-func AddGetUserHandler(router *chi.Mux, db *pgx.Conn, ctx context.Context) {
+// @Summary      Get Telegram user by username
+// @Description  Retrieve a Telegram user profile including channel and photos
+// @Tags         telegram
+// @Accept       json
+// @Produce      json
+// @Param        username path string true "Telegram username"
+// @Success      200 {object} webhound_telegram_transport.User "Telegram user found"
+// @Failure      400 {object} string "Invalid username"
+// @Failure      500 {object} string "User not found or database error"
+// @Router       /telegram/users/{username} [get]
+func AddGetUserHandler(router *chi.Mux, db *pgxpool.Pool, ctx context.Context) {
 	router.Get("/telegram/users/{username}", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Content-Type", "application/json")
 
