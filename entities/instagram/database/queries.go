@@ -57,7 +57,7 @@ type InsertInstagramFollowsInput struct {
 }
 
 func InsertInstagramFollows(db *pgxpool.Pool, ctx context.Context, input *InsertInstagramFollowsInput) error {
-	_, err := db.Exec(ctx, "insert into instagram.follows (followee_id, follower_id) values ($1, $2);", input.FolloweeId, input.FollowerId)
+	_, err := db.Exec(ctx, "insert into instagram.follows (followee_id, follower_id) values ($1, $2) on conflict do nothing;", input.FolloweeId, input.FollowerId)
 	if err != nil {
 		return fmt.Errorf("failed to insert instagram follows: %w", err)
 	}
@@ -151,4 +151,34 @@ func SelectInstagramMediaByPostId(db *pgxpool.Pool, ctx context.Context, postId 
 	}
 
 	return media, nil
+}
+
+type InsertInstagramPostInput struct {
+	UserId      int64
+	Description string
+}
+
+func InsertInstagramPost(db *pgxpool.Pool, ctx context.Context, input *InsertInstagramPostInput) (*InstagramPost, error) {
+	var post InstagramPost
+	row := db.QueryRow(ctx, "insert into instagram.post (user_id, description) values ($1, $2) returning id, user_id, description;", input.UserId, input.Description)
+	if err := row.Scan(&post.Id, &post.UserId, &post.Description); err != nil {
+		return nil, fmt.Errorf("failed to insert instagram post: %w", err)
+	}
+
+	return &post, nil
+}
+
+type InsertInstagramMediaInput struct {
+	PostId int64
+	Kind   string
+	Url    string
+}
+
+func InsertInstagramMedia(db *pgxpool.Pool, ctx context.Context, input *InsertInstagramMediaInput) error {
+	_, err := db.Exec(ctx, "insert into instagram.media (post_id, kind, url) values ($1, $2, $3);", input.PostId, input.Kind, input.Url)
+	if err != nil {
+		return fmt.Errorf("failed to insert instagram media: %w", err)
+	}
+
+	return nil
 }
