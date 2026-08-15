@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strconv"
 	"sync"
 	"time"
 
@@ -77,6 +78,20 @@ func GetFetchingServerAddressFromEnv() string {
 	return fmt.Sprintf("http://%s:%s", host, port)
 }
 
+func GetFetchingClientTimeoutFromEnv() time.Duration {
+	raw := webhound_config.GetString("FETCHING_SERVER_TIMEOUT_SECONDS")
+	if raw == "" {
+		raw = "90"
+	}
+
+	seconds, err := strconv.Atoi(raw)
+	if err != nil || seconds <= 0 {
+		seconds = 90
+	}
+
+	return time.Duration(seconds) * time.Second
+}
+
 func main() {
 	if err := webhound_config.Init(); err != nil {
 		failwith(err)
@@ -103,13 +118,13 @@ func main() {
 	r.Use(services.CorsMiddleware)
 	r.Use(services.LoggerMiddleware(logger))
 	r.Use(middleware.Recoverer)
-	r.Use(middleware.Timeout(30 * time.Second))
+	r.Use(middleware.Timeout(120 * time.Second))
 
 	r.Get("/api/health", HealthHandler)
 
 	ctx := context.Background()
 
-	fetching := webhound_fetching.NewClient(GetFetchingServerAddressFromEnv())
+	fetching := webhound_fetching.NewClientWithTimeout(GetFetchingServerAddressFromEnv(), GetFetchingClientTimeoutFromEnv())
 
 	users_transport.AddGetUserHandler(r, db, ctx)
 	users_transport.AddPostUserHandler(r, db, ctx)
@@ -130,6 +145,7 @@ func main() {
 
 	github_transport.AddGetUserHandler(r, db, fetching, ctx)
 	instagram_transport.AddGetInstagramUserHandler(r, db, fetching, ctx)
+	instagram_transport.AddGetInstagramAvatarHandler(r, db, fetching)
 
 	r.Get("/swagger/*", httpSwagger.Handler())
 
