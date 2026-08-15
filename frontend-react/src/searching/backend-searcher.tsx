@@ -23,7 +23,11 @@ export class WebHoundBackend___Searcher implements Searcher {
     return GetGitHubUser(username);
   }
 
-  public async searchInstagram(username: string): Promise<InstagramUserVerbose | undefined> {
-    return GetInstagramUser(username);
+  public async searchInstagram(
+    username: string,
+    _credentials?: { login: string; password: string },
+    followLimit?: number,
+  ): Promise<InstagramUserVerbose | undefined> {
+    return GetInstagramUser(username, followLimit);
   }
 }

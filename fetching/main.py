@@ -9,6 +9,7 @@ load_dotenv()
 
 from fastapi import FastAPI
 import logging
+import threading
 import uvicorn
 
 settings_path = f"{os.environ["REPO_ROOT"]}/settings/fetching-settings.json"
@@ -48,6 +49,20 @@ with open(settings_path, "r") as f:
             logging.warning(
                 msg=f"failed to enable service {service}: {ex} (skipping)"
             )
+
+
+def _warmup_instagram_client():
+    try:
+        from instagram.auth import get_client
+
+        get_client()
+        logging.info(msg="instagram client warmed up")
+    except Exception as ex:
+        logging.warning(msg=f"instagram client warmup failed: {ex} (will retry on first request)")
+
+
+if "instagram" in settings["enabled-services"]:
+    threading.Thread(target=_warmup_instagram_client, daemon=True).start()
 
 
 if __name__ == "__main__":

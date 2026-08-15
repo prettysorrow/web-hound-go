@@ -31,6 +31,23 @@ func InsertInstagramUser(db *pgxpool.Pool, ctx context.Context, user *InsertInst
 	return &InstagramUser{Id: id, Kind: user.Kind, Username: user.Username, PfpUrl: user.PfpUrl}, nil
 }
 
+func UpsertInstagramUserConnection(db *pgxpool.Pool, ctx context.Context, user *InsertInstagramUserInput) (*InstagramUser, error) {
+	var id int64
+	row := db.QueryRow(ctx,
+		`insert into instagram."user" (kind, username, pfp_url)
+		values ('short', $1, $2)
+		on conflict (username)
+		do update set
+			pfp_url = excluded.pfp_url
+		returning id;`,
+		user.Username, user.PfpUrl)
+	if err := row.Scan(&id); err != nil {
+		return nil, fmt.Errorf("failed to upsert instagram connection: %w", err)
+	}
+
+	return &InstagramUser{Id: id, Kind: "short", Username: user.Username, PfpUrl: user.PfpUrl}, nil
+}
+
 func SelectInstagramUserByUsername(db *pgxpool.Pool, ctx context.Context, username string) (*InstagramUser, error) {
 	var user InstagramUser
 	row := db.QueryRow(ctx, "select id, kind, username, pfp_url from instagram.user where username = $1;", username)
@@ -65,9 +82,22 @@ func InsertInstagramFollows(db *pgxpool.Pool, ctx context.Context, input *Insert
 	return nil
 }
 
+// DeleteInstagramConnections removes every follower/followee edge that touches
+// the given user. A refetch calls this first so the graph only ever reflects
+// the current run instead of accumulating edges across runs, which could
+// otherwise grow past the configured fetch limit.
+func DeleteInstagramConnections(db *pgxpool.Pool, ctx context.Context, userId int64) error {
+	_, err := db.Exec(ctx, "delete from instagram.follows where follower_id = $1 or followee_id = $1;", userId)
+	if err != nil {
+		return fmt.Errorf("failed to delete instagram follows: %w", err)
+	}
+
+	return nil
+}
+
 func SelectInstagramFollowees(db *pgxpool.Pool, ctx context.Context, id int64) ([]InstagramUser, error) {
 	followees := []InstagramUser{}
-	rows, err := db.Query(ctx, `select u.id, u.kind, u.username, u.pfp_url from instagram.follows left join instagram."user" u on follows.followee_id = u.id where follows.follower_id = $1;`, id)
+	rows, err := db.Query(ctx, `select u.id, u.kind, u.username, u.pfp_url from instagram.follows left join instagram."user" u on follows.followee_id = u.id where follows.follower_id = $1 order by u.username;`, id)
 	if err != nil {
 		return nil, fmt.Errorf("failed to select instagram followees: %w", err)
 	}
@@ -89,7 +119,7 @@ func SelectInstagramFollowees(db *pgxpool.Pool, ctx context.Context, id int64) (
 
 func SelectInstagramFollowers(db *pgxpool.Pool, ctx context.Context, id int64) ([]InstagramUser, error) {
 	followers := []InstagramUser{}
-	rows, err := db.Query(ctx, `select u.id, u.kind, u.username, u.pfp_url from instagram.follows left join instagram."user" u on follows.follower_id = u.id where follows.followee_id = $1;`, id)
+	rows, err := db.Query(ctx, `select u.id, u.kind, u.username, u.pfp_url from instagram.follows left join instagram."user" u on follows.follower_id = u.id where follows.followee_id = $1 order by u.username;`, id)
 	if err != nil {
 		return nil, fmt.Errorf("failed to select instagram followers: %w", err)
 	}

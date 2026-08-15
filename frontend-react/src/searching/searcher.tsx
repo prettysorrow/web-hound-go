@@ -8,5 +8,6 @@ export interface Searcher {
   searchInstagram(
     username: string,
     credentials?: { login: string; password: string },
+    followLimit?: number,
   ): Promise<InstagramUserVerbose | undefined>;
 }

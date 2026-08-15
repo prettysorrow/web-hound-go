@@ -145,7 +145,7 @@ func main() {
 
 	github_transport.AddGetUserHandler(r, db, fetching, ctx)
 	instagram_transport.AddGetInstagramUserHandler(r, db, fetching, ctx)
-	instagram_transport.AddGetInstagramAvatarHandler(r, db, fetching)
+	instagram_transport.AddGetInstagramAvatarHandler(r, db, ctx)
 
 	r.Get("/swagger/*", httpSwagger.Handler())
 

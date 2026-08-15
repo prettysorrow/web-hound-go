@@ -1,6 +1,7 @@
 import type { GraphData, PersonData } from "./dtos";
 import { useWebHoundSearchingStore } from "@/searching/store";
-import { WebHoundSocialGraph } from "./graph";
+import { instagramAvatarUrl } from "@/transport/fetching/instagram";
+import { WebHoundSocialGraph, WebHoundSocialGraphIncremental } from "./graph";
 
 export function GitHubSocialGraph() {
   const { github, setUsername } = useWebHoundSearchingStore();
@@ -71,33 +72,36 @@ export function InstagramSocialGraph() {
     return <div>Instagram profile is private, so social graph is not available</div>;
   }
 
-  const followees: { person: PersonData; kind: "to" }[] = instagram.followees.map((followee) => ({
-    person: {
-      label: followee.username,
-      image: followee.pfp_url,
-      onClick: () => setUsername(followee.username),
-    },
-    kind: "to",
+  const followees: PersonData[] = instagram.followees.map((followee) => ({
+    label: followee.username,
+    image: instagramAvatarUrl(followee.username),
+    onClick: () => setUsername(followee.username),
   }));
 
-  const followers: { person: PersonData; kind: "by" }[] = instagram.followers.map((follower) => ({
-    person: {
-      label: follower.username,
-      image: follower.pfp_url,
-      onClick: () => setUsername(follower.username),
-    },
-    kind: "by",
+  const followers: PersonData[] = instagram.followers.map((follower) => ({
+    label: follower.username,
+    image: instagramAvatarUrl(follower.username),
+    onClick: () => setUsername(follower.username),
   }));
 
-  const graphData: GraphData = {
-    main: { label: instagram.username, image: instagram.pfp_url },
-    others: [...followees, ...followers],
+  const main: PersonData = {
+    label: instagram.username,
+    image: instagramAvatarUrl(instagram.username),
+    onClick: () => setUsername(instagram.username),
   };
+
+  const inProgress = instagram.status === "in_progress";
 
   return (
     <div>
       <label>Instagram social graph</label>
-      <WebHoundSocialGraph {...graphData} />
+      {inProgress && <div>Loading...</div>}
+      <WebHoundSocialGraphIncremental
+        key={instagram.username}
+        main={main}
+        followees={followees}
+        followers={followers}
+      />
     </div>
   );
 }

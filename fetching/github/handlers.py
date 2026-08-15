@@ -1,5 +1,5 @@
 import httpx
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from github.dto import GitHubUser
 
 base_url = "https://api.github.com/users"
@@ -24,18 +24,28 @@ def parse_summary_user(user) -> GitHubUser:
     )
 
 
+def get_json(url: str, not_found_message: str):
+    response = httpx.get(url, headers=headers)
+    if response.status_code == 404:
+        raise HTTPException(status_code=404, detail=not_found_message)
+    response.raise_for_status()
+    return response.json()
+
+
 @router.get("/{username}")
 def get_user(username: str) -> GitHubUser:
-    endpoint = f"{base_url}/{username}"
-    response = httpx.get(endpoint, headers=headers)
-    user = response.json()
+    user = get_json(f"{base_url}/{username}", f"github user '{username}' not found")
     followers = [
         parse_summary_user(follower)
-        for follower in httpx.get(f"{endpoint}/followers", headers=headers).json()
+        for follower in get_json(
+            f"{base_url}/{username}/followers", f"github user '{username}' not found"
+        )
     ]
     followees = [
         parse_summary_user(followee)
-        for followee in httpx.get(f"{endpoint}/following", headers=headers).json()
+        for followee in get_json(
+            f"{base_url}/{username}/following", f"github user '{username}' not found"
+        )
     ]
     return GitHubUser(
         username=username,

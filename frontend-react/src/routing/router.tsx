@@ -5,7 +5,7 @@ import { WebHoundIndex } from "@/index";
 import { WebHoundSearch } from "@/searching/search";
 import { WebHoundProfile } from "@/settings/profile";
 import { WebHoundRequestsMenu, WebHoundStatisticsMenu, WebHoundUsersMenu } from "@/admin/layouts";
-import { WebHoundEnabledServices } from "@/settings/enabled-services/panel";
+import { WebHoundSearchingSettings } from "@/settings/searching";
 import { GitHubSocialGraph, InstagramSocialGraph } from "@/graph/convert";
 import { WithActualResults } from "@/searching/with-actual-results";
 import { WebHoundSocialGraphs } from "@/graph/social-graphs";
@@ -41,7 +41,7 @@ const WebHoundRouter = createBrowserRouter([
           },
           {
             path: "searching",
-            element: <WebHoundEnabledServices />,
+            element: <WebHoundSearchingSettings />,
           },
         ],
       },

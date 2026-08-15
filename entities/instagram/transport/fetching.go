@@ -9,32 +9,52 @@ import (
 	webhound_fetching "go.mod/services/fetching"
 )
 
-func GetInstagramUserOrFetch(db *pgxpool.Pool, ctx context.Context, fetching *webhound_fetching.Client, username string) (*InstagramUserPublicInfo, error) {
+func GetInstagramUserOrFetch(db *pgxpool.Pool, ctx context.Context, fetching *webhound_fetching.Client, username string, followLimit int) (*InstagramUserPublicInfo, error) {
 	user, err := database.SelectInstagramUserByUsername(db, ctx, username)
 	if err == nil && user.Kind != "short" {
+		// An in-flight background fetch keeps the graph "in_progress" so the
+		// frontend keeps polling; otherwise serve the cached graph.
+		if job := getInstagramJob(username); job != nil && !job.finished() {
+			return inProgressInstagramUserInfo(db, ctx, user)
+		}
 		return buildInstagramUserInfo(db, ctx, user)
 	}
 
-	fetched, err := fetching.GetInstagramUser(ctx, username)
-	if err != nil {
-		return nil, fmt.Errorf("failed to fetch instagram user @%s from external service: %w", username, err)
+	// The user is not cached (or is a "short" connection-only record): start
+	// the fetch and wait until the main profile is persisted so the response
+	// can carry partial data.
+	job := startInstagramJob(db, fetching, username, followLimit)
+	if !job.waitReady(ctx) {
+		return nil, fmt.Errorf("timed out waiting for instagram user @%s", username)
 	}
-
-	if err := persistInstagramUser(db, ctx, fetched); err != nil {
-		return nil, fmt.Errorf("failed to store fetched instagram user @%s: %w", username, err)
+	if _, err := job.state(); err != nil {
+		return nil, err
 	}
 
 	user, err = database.SelectInstagramUserByUsername(db, ctx, username)
 	if err != nil {
 		return nil, fmt.Errorf("failed to select instagram user @%s after fetching: %w", username, err)
 	}
+	return inProgressInstagramUserInfo(db, ctx, user)
+}
 
-	return buildInstagramUserInfo(db, ctx, user)
+func inProgressInstagramUserInfo(db *pgxpool.Pool, ctx context.Context, user *database.InstagramUser) (*InstagramUserPublicInfo, error) {
+	info, err := buildInstagramUserInfo(db, ctx, user)
+	if err != nil {
+		return nil, err
+	}
+	info.Status = "in_progress"
+	return info, nil
 }
 
 func buildInstagramUserInfo(db *pgxpool.Pool, ctx context.Context, user *database.InstagramUser) (*InstagramUserPublicInfo, error) {
 	if user.Kind == "private" {
-		return &InstagramUserPublicInfo{Kind: user.Kind, Username: user.Username, PfpUrl: user.PfpUrl}, nil
+		return &InstagramUserPublicInfo{
+			Kind:     user.Kind,
+			Username: user.Username,
+			PfpUrl:   user.PfpUrl,
+			Status:   "complete",
+		}, nil
 	}
 
 	followees_entity, err := database.SelectInstagramFollowees(db, ctx, user.Id)
@@ -86,49 +106,6 @@ func buildInstagramUserInfo(db *pgxpool.Pool, ctx context.Context, user *databas
 		Followees: followees,
 		Followers: followers,
 		Posts:     posts,
+		Status:    "complete",
 	}, nil
-}
-
-func persistInstagramUser(db *pgxpool.Pool, ctx context.Context, fetched *webhound_fetching.InstagramUser) error {
-	user, err := database.InsertInstagramUser(db, ctx, &database.InsertInstagramUserInput{Kind: "public", Username: fetched.Username, PfpUrl: fetched.AvatarUrl})
-	if err != nil {
-		return err
-	}
-
-	for _, followee := range fetched.Followees {
-		followee_entity, err := database.InsertInstagramUser(db, ctx, &database.InsertInstagramUserInput{Kind: "short", Username: followee.Username, PfpUrl: followee.AvatarUrl})
-		if err != nil {
-			return fmt.Errorf("failed to store followee %s: %w", followee.Username, err)
-		}
-
-		if err := database.InsertInstagramFollows(db, ctx, &database.InsertInstagramFollowsInput{FolloweeId: followee_entity.Id, FollowerId: user.Id}); err != nil {
-			return fmt.Errorf("failed to store follows %s->%s: %w", user.Username, followee.Username, err)
-		}
-	}
-
-	for _, follower := range fetched.Followers {
-		follower_entity, err := database.InsertInstagramUser(db, ctx, &database.InsertInstagramUserInput{Kind: "short", Username: follower.Username, PfpUrl: follower.AvatarUrl})
-		if err != nil {
-			return fmt.Errorf("failed to store follower %s: %w", follower.Username, err)
-		}
-
-		if err := database.InsertInstagramFollows(db, ctx, &database.InsertInstagramFollowsInput{FolloweeId: user.Id, FollowerId: follower_entity.Id}); err != nil {
-			return fmt.Errorf("failed to store follows %s->%s: %w", follower.Username, user.Username, err)
-		}
-	}
-
-	if len(fetched.Medias) > 0 {
-		post_entity, err := database.InsertInstagramPost(db, ctx, &database.InsertInstagramPostInput{UserId: user.Id, Description: ""})
-		if err != nil {
-			return fmt.Errorf("failed to store post: %w", err)
-		}
-
-		for _, media := range fetched.Medias {
-			if err := database.InsertInstagramMedia(db, ctx, &database.InsertInstagramMediaInput{PostId: post_entity.Id, Kind: media.Type, Url: media.Url}); err != nil {
-				return fmt.Errorf("failed to store media: %w", err)
-			}
-		}
-	}
-
-	return nil
 }

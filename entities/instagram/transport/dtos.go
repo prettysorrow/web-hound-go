@@ -37,4 +37,5 @@ type InstagramUserPublicInfo struct {
 	Followees []InstagramUserShort `json:"followees"`
 	Followers []InstagramUserShort `json:"followers"`
 	Posts     *InstagramPost       `json:"posts"`
+	Status    string               `json:"status"`
 }

@@ -4,6 +4,10 @@ import type { InstagramUserShort, InstagramUserVerbose } from "../dtos/instagram
 
 const base_url = FrontendEnvVars.VITE_BACKEND_API_URL;
 
+export function instagramAvatarUrl(username: string): string {
+  return `${base_url}/api/instagram/avatars/${encodeURIComponent(username)}`;
+}
+
 interface BackendInstagramMedia {
   kind: "photo" | "video";
   url: string;
@@ -22,21 +26,34 @@ interface BackendInstagramUser {
   followees?: BackendInstagramUser[];
   followers?: BackendInstagramUser[];
   posts?: BackendInstagramPost;
+  status?: "in_progress" | "complete";
 }
 
 function toShort(user: BackendInstagramUser): InstagramUserShort {
   return { kind: "short", username: user.username, pfp_url: user.pfp_url };
 }
 
-export async function GetInstagramUser(username: string): Promise<InstagramUserVerbose | undefined> {
+export async function GetInstagramUser(
+  username: string,
+  followLimit?: number,
+): Promise<InstagramUserVerbose | undefined> {
   try {
     const response = await axios.get<BackendInstagramUser>(
       `${base_url}/api/instagram/users/${username}`,
+      {
+        params:
+          followLimit !== undefined && followLimit > 0 ? { follow_limit: followLimit } : undefined,
+      },
     );
     const user = response.data;
 
     if (user.kind === "private") {
-      return { kind: "private", username: user.username, pfp_url: user.pfp_url };
+      return {
+        kind: "private",
+        username: user.username,
+        pfp_url: user.pfp_url,
+        status: user.status ?? "complete",
+      };
     }
 
     return {
@@ -46,6 +63,7 @@ export async function GetInstagramUser(username: string): Promise<InstagramUserV
       followees: (user.followees ?? []).map(toShort),
       followers: (user.followers ?? []).map(toShort),
       posts: user.posts ?? { description: "", media: [] },
+      status: user.status ?? "complete",
     };
   } catch (error) {
     console.error(`failed to fetch instagram user @${username} from backend server: ${error}`);

@@ -30,7 +30,7 @@ func AddGetUserHandler(r *chi.Mux, db *pgxpool.Pool, fetching *webhound_fetching
 		user_dto, err := GetUserDtoOrFetch(db, ctx, fetching, username)
 		if err != nil {
 			err = fmt.Errorf("failed to fetch user @%s for GET /github/users/{username}: %w", username, err)
-			w.WriteHeader(http.StatusBadRequest)
+			w.WriteHeader(webhound_fetching.StatusCodeForError(err))
 			encoder.Encode(err.Error())
 			return
 		}

@@ -7,11 +7,21 @@ from typing import List, Optional
 
 class InstagramUser(ForbidExtraModel):
     username: str = Field(max_length=100)
-    bio: Optional[str] = Field(default=None, max_length=1000)
     avatar_url: Optional[AnyUrl] = None
-    followees: Optional[List[InstagramUser]] = None
-    followers: Optional[List[InstagramUser]] = None
     medias: Optional[List[InstagramMedias]] = None
+
+
+class InstagramUserInfo(ForbidExtraModel):
+    avatar_url: Optional[AnyUrl] = None
+    is_private: bool = False
+    follow_limit: int
+    user_id: str
+
+
+class InstagramUserChunk(ForbidExtraModel):
+    users: List[InstagramUser]
+    next_max_id: str
+    done: bool
 
 
 class InstagramMedias(ForbidExtraModel):

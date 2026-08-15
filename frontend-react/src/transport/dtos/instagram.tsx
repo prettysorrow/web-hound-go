@@ -17,7 +17,9 @@ export type InstagramUserVerbose =
         description: string;
         media: { kind: "photo" | "video"; url: string }[];
       };
+
+      status?: "in_progress" | "complete";
     }
-  | { kind: "private"; username: string; pfp_url: string };
+  | { kind: "private"; username: string; pfp_url: string; status?: "in_progress" | "complete" };
 
 export type InstagramUser = InstagramUserVerbose | InstagramUserShort;
