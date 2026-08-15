@@ -3,3 +3,5 @@ postgres-db/
 .vscode
 docs/
 __pycache__
+
+settings/instagram-session.json
