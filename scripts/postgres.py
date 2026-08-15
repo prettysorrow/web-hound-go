@@ -5,7 +5,7 @@ import sys
 import subprocess
 import webbrowser
 
-from scripts.env import load_env_file
+from init_env import load_env_file
 
 load_env_file()
 
