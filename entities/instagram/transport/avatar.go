@@ -9,12 +9,10 @@ import (
 	"time"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/jackc/pgx/v5/pgxpool"
-	database "go.mod/entities/instagram/database"
 )
 
 // @Summary      Get Instagram user avatar
-// @Description  Proxy a cached Instagram avatar so the browser does not hit Instagram's CDN directly (which blocks hotlinking and requires the fetching session). Reads the cached pfp URL from the database and streams the image through this backend.
+// @Description  Proxy a cached Instagram avatar so the browser does not hit Instagram's CDN directly (which blocks hotlinking and requires the fetching session). Looks the cached pfp URL up in the in-memory cache and streams the image through this backend.
 // @Tags         instagram
 // @Accept       json
 // @Produce      application/octet-stream
@@ -23,7 +21,7 @@ import (
 // @Failure      404 {object} string "No avatar cached for the user"
 // @Failure      502 {object} string "Failed to fetch the upstream avatar"
 // @Router       /api/instagram/avatars/{username} [get]
-func AddGetInstagramAvatarHandler(router chi.Router, db *pgxpool.Pool, ctx context.Context) {
+func AddGetInstagramAvatarHandler(router chi.Router, ctx context.Context) {
 	client := &http.Client{Timeout: 30 * time.Second}
 
 	router.Get("/api/instagram/avatars/{username}", func(w http.ResponseWriter, r *http.Request) {
@@ -31,19 +29,14 @@ func AddGetInstagramAvatarHandler(router chi.Router, db *pgxpool.Pool, ctx conte
 		w.Header().Add("Content-Type", "application/json")
 
 		username := chi.URLParam(r, "username")
-		user, err := database.SelectInstagramUserByUsername(db, ctx, username)
-		if err != nil {
-			w.WriteHeader(http.StatusNotFound)
-			encoder.Encode(fmt.Sprintf("no avatar cached for @%s", username))
-			return
-		}
-		if user.PfpUrl == "" {
+		avatar, ok := instagramAvatarFor(username)
+		if !ok {
 			w.WriteHeader(http.StatusNotFound)
 			encoder.Encode(fmt.Sprintf("no avatar cached for @%s", username))
 			return
 		}
 
-		resp, err := client.Get(user.PfpUrl)
+		resp, err := client.Get(avatar)
 		if err != nil {
 			w.WriteHeader(http.StatusBadGateway)
 			encoder.Encode(fmt.Sprintf("failed to fetch avatar for @%s: %v", username, err))
@@ -66,4 +59,44 @@ func AddGetInstagramAvatarHandler(router chi.Router, db *pgxpool.Pool, ctx conte
 		w.WriteHeader(http.StatusOK)
 		io.Copy(w, resp.Body)
 	})
+}
+
+// instagramAvatarFor finds the cached avatar URL for a username across all
+// in-memory instagram graphs (main profiles and connections alike).
+func instagramAvatarFor(username string) (string, bool) {
+	jobsMu.Lock()
+	defer jobsMu.Unlock()
+
+	for _, job := range jobs {
+		job.mu.Lock()
+		avatar := ""
+		found := false
+
+		if job.username == username && job.pfpUrl != "" {
+			avatar, found = job.pfpUrl, true
+		}
+		if !found {
+			for _, follower := range job.followers {
+				if follower.Username == username && follower.PfpUrl != "" {
+					avatar, found = follower.PfpUrl, true
+					break
+				}
+			}
+		}
+		if !found {
+			for _, followee := range job.followees {
+				if followee.Username == username && followee.PfpUrl != "" {
+					avatar, found = followee.PfpUrl, true
+					break
+				}
+			}
+		}
+
+		job.mu.Unlock()
+		if found {
+			return avatar, true
+		}
+	}
+
+	return "", false
 }

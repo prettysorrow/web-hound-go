@@ -6,27 +6,36 @@ import (
 	"sync"
 	"time"
 
-	"github.com/jackc/pgx/v5/pgxpool"
-	database "go.mod/entities/instagram/database"
 	webhound_fetching "go.mod/services/fetching"
 )
 
-// instagramFetchJob fills in a user's followers/followees in the background.
-// The main profile is persisted before the job signals ready, so a request can
-// return a partial graph right away; the frontend polls until the job
-// finishes.
+// instagramPageDelay paces the paginated follow-list requests so Instagram's
+// rate limit is less likely to trip.
+const instagramPageDelay = 1500 * time.Millisecond
+
+// instagramFetchJob fills in a user's followers/followees in the background
+// and keeps everything in process memory (nothing is written to the
+// database). The main profile is stored before the job signals ready, so a
+// request can return a partial graph right away; the frontend polls until the
+// job finishes.
 type instagramFetchJob struct {
 	mu          sync.Mutex
 	ready       chan struct{}
 	closeReady  sync.Once
 	followLimit int
-	done        bool
-	err         error
-}
 
-// instagramPageDelay paces the paginated follow-list requests so Instagram's
-// rate limit is less likely to trip.
-const instagramPageDelay = 1500 * time.Millisecond
+	username  string
+	userId    string
+	pfpUrl    string
+	isPrivate bool
+
+	followers []InstagramUserShort
+	followees []InstagramUserShort
+	posts     *InstagramPost
+
+	done bool
+	err  error
+}
 
 func (j *instagramFetchJob) signalReady() {
 	j.closeReady.Do(func() { close(j.ready) })
@@ -71,24 +80,30 @@ func getInstagramJob(username string) *instagramFetchJob {
 	return jobs[username]
 }
 
+func deleteInstagramJob(username string) {
+	jobsMu.Lock()
+	defer jobsMu.Unlock()
+	delete(jobs, username)
+}
+
 // startInstagramJob returns the running job for the user, or registers and
-// launches a new one. The job persists the main profile before signalling
+// launches a new one. The job stores the main profile before signalling
 // ready, so the caller can immediately serve a partial graph.
-func startInstagramJob(db *pgxpool.Pool, fetching *webhound_fetching.Client, username string, followLimit int) *instagramFetchJob {
+func startInstagramJob(fetching *webhound_fetching.Client, username string, followLimit int) *instagramFetchJob {
 	jobsMu.Lock()
 	if job := jobs[username]; job != nil && !job.finished() {
 		jobsMu.Unlock()
 		return job
 	}
-	job := &instagramFetchJob{ready: make(chan struct{}), followLimit: followLimit}
+	job := &instagramFetchJob{ready: make(chan struct{}), followLimit: followLimit, username: username}
 	jobs[username] = job
 	jobsMu.Unlock()
 
-	go job.run(db, fetching, username)
+	go job.run(fetching, username)
 	return job
 }
 
-func (j *instagramFetchJob) run(db *pgxpool.Pool, fetching *webhound_fetching.Client, username string) {
+func (j *instagramFetchJob) run(fetching *webhound_fetching.Client, username string) {
 	ctx := context.Background()
 
 	info, err := fetching.GetInstagramUserInfo(ctx, username)
@@ -97,25 +112,15 @@ func (j *instagramFetchJob) run(db *pgxpool.Pool, fetching *webhound_fetching.Cl
 		return
 	}
 
-	kind := "public"
-	if info.IsPrivate {
-		kind = "private"
-	}
-	mainUser, err := database.InsertInstagramUser(db, ctx, &database.InsertInstagramUserInput{Kind: kind, Username: username, PfpUrl: info.AvatarUrl})
-	if err != nil {
-		j.finish(fmt.Errorf("failed to store instagram user @%s: %w", username, err))
-		return
-	}
+	j.mu.Lock()
+	j.userId = info.UserId
+	j.pfpUrl = info.AvatarUrl
+	j.isPrivate = info.IsPrivate
+	j.mu.Unlock()
 	j.signalReady()
 
 	if info.IsPrivate {
 		j.finish(nil)
-		return
-	}
-
-	// Reset edges from an earlier run so the graph reflects only this fetch.
-	if err := database.DeleteInstagramConnections(db, ctx, mainUser.Id); err != nil {
-		j.finish(fmt.Errorf("failed to reset instagram graph @%s: %w", username, err))
 		return
 	}
 
@@ -128,11 +133,11 @@ func (j *instagramFetchJob) run(db *pgxpool.Pool, fetching *webhound_fetching.Cl
 	wg.Add(2)
 	go func() {
 		defer wg.Done()
-		j.fetchList(db, fetching, "followers", username, info.UserId, mainUser.Id, limit)
+		j.fetchList(fetching, "followers", username, info.UserId, limit)
 	}()
 	go func() {
 		defer wg.Done()
-		j.fetchList(db, fetching, "followees", username, info.UserId, mainUser.Id, limit)
+		j.fetchList(fetching, "followees", username, info.UserId, limit)
 	}()
 	wg.Wait()
 
@@ -141,16 +146,20 @@ func (j *instagramFetchJob) run(db *pgxpool.Pool, fetching *webhound_fetching.Cl
 	}
 
 	if media, err := fetching.GetInstagramUserMedia(ctx, username); err == nil {
-		if err := persistInstagramMedias(db, ctx, mainUser.Id, media); err != nil {
-			j.finish(fmt.Errorf("failed to store instagram media @%s: %w", username, err))
+		post, err := buildInstagramPost(media)
+		if err != nil {
+			j.finish(err)
 			return
 		}
+		j.mu.Lock()
+		j.posts = post
+		j.mu.Unlock()
 	}
 
 	j.finish(nil)
 }
 
-func (j *instagramFetchJob) fetchList(db *pgxpool.Pool, fetching *webhound_fetching.Client, list, username, userId string, mainUserId int64, limit int) {
+func (j *instagramFetchJob) fetchList(fetching *webhound_fetching.Client, list, username, userId string, limit int) {
 	ctx := context.Background()
 	maxId := ""
 	collected := 0
@@ -166,16 +175,22 @@ func (j *instagramFetchJob) fetchList(db *pgxpool.Pool, fetching *webhound_fetch
 			return
 		}
 
+		added := make([]InstagramUserShort, 0, len(chunk.Users))
 		for _, u := range chunk.Users {
 			if collected >= limit {
-				return
+				break
 			}
-			if err := persistInstagramConnection(db, ctx, list, mainUserId, u); err != nil {
-				j.finish(err)
-				return
-			}
+			added = append(added, InstagramUserShort{Kind: "short", Username: u.Username, PfpUrl: u.AvatarUrl})
 			collected++
 		}
+
+		j.mu.Lock()
+		if list == "followers" {
+			j.followers = append(j.followers, added...)
+		} else {
+			j.followees = append(j.followees, added...)
+		}
+		j.mu.Unlock()
 
 		if chunk.Done || chunk.NextMaxId == "" || len(chunk.Users) == 0 {
 			return
@@ -185,33 +200,15 @@ func (j *instagramFetchJob) fetchList(db *pgxpool.Pool, fetching *webhound_fetch
 	}
 }
 
-func persistInstagramConnection(db *pgxpool.Pool, ctx context.Context, list string, mainUserId int64, u *webhound_fetching.InstagramUser) error {
-	user, err := database.UpsertInstagramUserConnection(db, ctx, &database.InsertInstagramUserInput{Username: u.Username, PfpUrl: u.AvatarUrl})
-	if err != nil {
-		return fmt.Errorf("failed to store instagram %s %s: %w", list, u.Username, err)
-	}
-
-	if list == "followers" {
-		return database.InsertInstagramFollows(db, ctx, &database.InsertInstagramFollowsInput{FolloweeId: mainUserId, FollowerId: user.Id})
-	}
-	return database.InsertInstagramFollows(db, ctx, &database.InsertInstagramFollowsInput{FolloweeId: user.Id, FollowerId: mainUserId})
-}
-
-func persistInstagramMedias(db *pgxpool.Pool, ctx context.Context, userId int64, fetched *webhound_fetching.InstagramUser) error {
+func buildInstagramPost(fetched *webhound_fetching.InstagramUser) (*InstagramPost, error) {
 	if len(fetched.Medias) == 0 {
-		return nil
+		return nil, nil
 	}
 
-	post, err := database.InsertInstagramPost(db, ctx, &database.InsertInstagramPostInput{UserId: userId, Description: ""})
-	if err != nil {
-		return err
+	media := make([]InstagramMedia, 0, len(fetched.Medias))
+	for _, m := range fetched.Medias {
+		media = append(media, InstagramMedia{Kind: m.Type, Url: m.Url})
 	}
 
-	for _, media := range fetched.Medias {
-		if err := database.InsertInstagramMedia(db, ctx, &database.InsertInstagramMediaInput{PostId: post.Id, Kind: media.Type, Url: media.Url}); err != nil {
-			return err
-		}
-	}
-
-	return nil
+	return &InstagramPost{Description: "", Media: media}, nil
 }

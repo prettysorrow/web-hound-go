@@ -27,7 +27,6 @@ import (
 	github_transport "go.mod/entities/github/transport"
 	instagram_transport "go.mod/entities/instagram/transport"
 	requests_transport "go.mod/entities/requests/transport"
-	telegram_transport "go.mod/entities/telegram/transport"
 	users_transport "go.mod/entities/users/transport"
 	webhound_fetching "go.mod/services/fetching"
 )
@@ -134,18 +133,9 @@ func main() {
 	requests_transport.AddGetUserRequestsHandler(r, db, ctx)
 	requests_transport.AddPostRequestHandler(r, db, ctx)
 
-	github_transport.AddPostUserHandler(r, db, ctx)
-	github_transport.AddGetUsersHandler(r, db, ctx)
-	github_transport.AddGetUsersHandler(r, db, ctx)
-
-	telegram_transport.AddGetUserHandler(r, db, ctx)
-	telegram_transport.AddPostUserHandler(r, db, ctx)
-
-	instagram_transport.AddPostInstagramUser(r, db, ctx)
-
-	github_transport.AddGetUserHandler(r, db, fetching, ctx)
-	instagram_transport.AddGetInstagramUserHandler(r, db, fetching, ctx)
-	instagram_transport.AddGetInstagramAvatarHandler(r, db, ctx)
+	github_transport.AddGetUserHandler(r, fetching, ctx)
+	instagram_transport.AddGetInstagramUserHandler(r, fetching, ctx)
+	instagram_transport.AddGetInstagramAvatarHandler(r, ctx)
 
 	r.Get("/swagger/*", httpSwagger.Handler())
 
