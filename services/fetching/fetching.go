@@ -38,23 +38,17 @@ func (c *Client) GetGitHubUser(ctx context.Context, username string) (*GitHubUse
 	return &user, nil
 }
 
-type InstagramMedia struct {
-	Type string `json:"type"`
-	Url  string `json:"url"`
-}
-
 type InstagramUser struct {
-	Username  string            `json:"username"`
-	Bio       string            `json:"bio"`
-	AvatarUrl string            `json:"avatar_url"`
-	Followers []*InstagramUser  `json:"followers"`
-	Followees []*InstagramUser  `json:"followees"`
-	Medias    []*InstagramMedia `json:"medias"`
+	Username  string           `json:"username"`
+	Bio       string           `json:"bio"`
+	AvatarUrl string           `json:"avatar_url"`
+	Followers []*InstagramUser `json:"followers"`
+	Followees []*InstagramUser `json:"followees"`
 }
 
 func (c *Client) GetInstagramUser(ctx context.Context, username string) (*InstagramUser, error) {
 	var user InstagramUser
-	if err := c.getJSON(ctx, fmt.Sprintf("/api/fetching/instagram/users/%s?limit=3", username), &user); err != nil {
+	if err := c.getJSON(ctx, fmt.Sprintf("/api/fetching/instagram/users/%s", username), &user); err != nil {
 		return nil, err
 	}
 	return &user, nil

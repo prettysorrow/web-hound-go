@@ -1,6 +1,5 @@
-import os
 from instagram.auth import get_client
-from instagram.dto import InstagramUser, InstagramMedia, InstagramMediaType
+from instagram.dto import InstagramUser
 from fastapi import APIRouter
 
 router = APIRouter(
@@ -9,7 +8,7 @@ router = APIRouter(
 
 
 @router.get("/{username}")
-async def get_user(username: str, limit: int = 3):
+async def get_user(username: str):
     async with get_client() as client:
         user = client.user_info_by_username(username)
         user_id = client.user_id_from_username(username)
@@ -23,18 +22,10 @@ async def get_user(username: str, limit: int = 3):
             for _, follower in client.user_followers(user_id).items()
         ]
 
-        medias = []
-        for media in client.user_medias(user_id, amount=limit):
-            if media.media_type == 1:
-                medias.append(InstagramMedia(type="photo", url=media.thumbnail_url))
-            elif media.media_type == 2:
-                medias.append(InstagramMedia(type="video", url=media.video_url))
-
         return InstagramUser(
             username=username,
             bio=user.biography,
             avatar_url=user.profile_pic_url,
             followees=followees,
             followers=followers,
-            medias=medias,
         )

@@ -1,5 +1,3 @@
-delete from instagram.media;
-delete from instagram.post;
 delete from instagram.follows;
 delete from instagram.user
 where username in (

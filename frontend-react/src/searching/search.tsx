@@ -3,7 +3,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Field, FieldLabel, FieldDescription, FieldGroup } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { WithSearcher } from "@/hooks/useSearcher";
-import React, { use, useState } from "react";
+import React, { useState } from "react";
 
 import { SearchingResults } from "./summary";
 import { useWebHoundSearchingStore } from "./store";

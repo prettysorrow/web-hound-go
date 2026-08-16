@@ -1,8 +1,7 @@
 import FrontendEnvVars from "@/context/env";
-import { WebHoundTesting___ActiveCredentials } from "@/testing/inputs/credentials/active";
 import { WebHoundTesting___Credentials } from "@/testing/inputs/credentials/all";
 import type { Credentials } from "@/transport/dtos/credentials";
-import { createContext, useContext, useReducer, useState } from "react";
+import { createContext, useReducer } from "react";
 
 type Action = { type: "add"; creds: Credentials } | { type: "delete"; creds: Credentials };
 
@@ -38,16 +37,4 @@ export function WithCredentials(props: { children: React.ReactNode }) {
       {props.children}
     </CredentialsContext.Provider>
   );
-}
-
-export function useCredentials(): {
-  creds: Credentials[];
-  setCreds: React.ActionDispatch<[action: Action]>;
-} {
-  let context = useContext(CredentialsContext);
-  if (context === undefined) {
-    throw new Error("failed to use credetials context");
-  }
-
-  return context;
 }

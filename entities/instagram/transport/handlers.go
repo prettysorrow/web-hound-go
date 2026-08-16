@@ -14,7 +14,7 @@ import (
 )
 
 // @Summary      Get Instagram user by username
-// @Description  Retrieve an Instagram user profile including followers, followees and posts. Reads from the database first, falls back to the external fetching service when the user is not cached. Private users return a reduced response.
+// @Description  Retrieve an Instagram user profile including followers and followees. Reads from the database first, falls back to the external fetching service when the user is not cached. Private users return a reduced response.
 // @Tags         instagram
 // @Accept       json
 // @Produce      json

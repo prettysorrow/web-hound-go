@@ -4,16 +4,6 @@ import type { InstagramUserShort, InstagramUserVerbose } from "../dtos/instagram
 
 const base_url = FrontendEnvVars.VITE_BACKEND_API_URL;
 
-interface BackendInstagramMedia {
-  kind: "photo" | "video";
-  url: string;
-}
-
-interface BackendInstagramPost {
-  description: string;
-  media: BackendInstagramMedia[];
-}
-
 interface BackendInstagramUser {
   id: number;
   kind: "public" | "private" | "short";
@@ -21,7 +11,6 @@ interface BackendInstagramUser {
   pfp_url: string;
   followees?: BackendInstagramUser[];
   followers?: BackendInstagramUser[];
-  posts?: BackendInstagramPost;
 }
 
 function toShort(user: BackendInstagramUser): InstagramUserShort {
@@ -45,7 +34,6 @@ export async function GetInstagramUser(username: string): Promise<InstagramUserV
       pfp_url: user.pfp_url,
       followees: (user.followees ?? []).map(toShort),
       followers: (user.followers ?? []).map(toShort),
-      posts: user.posts ?? { description: "", media: [] },
     };
   } catch (error) {
     console.error(`failed to fetch instagram user @${username} from backend server: ${error}`);

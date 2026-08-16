@@ -10,7 +10,6 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import { useCredentials } from "./store";
 import { AddCredentials } from "./add";
 import { Button } from "@/components/ui/button";
-import { act } from "react";
 
 function _SingleCredentials(props: { credentials: Credentials; isActive: boolean }) {
   let components: React.ReactNode[] = [];

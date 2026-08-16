@@ -57,35 +57,12 @@ func buildInstagramUserInfo(db *pgxpool.Pool, ctx context.Context, user *databas
 		followers = append(followers, InstagramUserShort{Kind: "short", Username: follower.Username, PfpUrl: follower.PfpUrl})
 	}
 
-	posts_entity, err := database.SelectInstagramPostsByUserId(db, ctx, user.Id)
-	if err != nil {
-		return nil, fmt.Errorf("failed to select posts: %w", err)
-	}
-
-	var posts *InstagramPost
-	if len(posts_entity) > 0 {
-		post_entity := posts_entity[0]
-
-		media_entity, err := database.SelectInstagramMediaByPostId(db, ctx, post_entity.Id)
-		if err != nil {
-			return nil, fmt.Errorf("failed to select media: %w", err)
-		}
-
-		media := make([]InstagramMedia, 0, len(media_entity))
-		for _, m := range media_entity {
-			media = append(media, InstagramMedia{Kind: m.Kind, Url: m.Url})
-		}
-
-		posts = &InstagramPost{Description: post_entity.Description, Media: media}
-	}
-
 	return &InstagramUserPublicInfo{
 		Kind:      user.Kind,
 		Username:  user.Username,
 		PfpUrl:    user.PfpUrl,
 		Followees: followees,
 		Followers: followers,
-		Posts:     posts,
 	}, nil
 }
 
@@ -114,19 +91,6 @@ func persistInstagramUser(db *pgxpool.Pool, ctx context.Context, fetched *webhou
 
 		if err := database.InsertInstagramFollows(db, ctx, &database.InsertInstagramFollowsInput{FolloweeId: user.Id, FollowerId: follower_entity.Id}); err != nil {
 			return fmt.Errorf("failed to store follows %s->%s: %w", follower.Username, user.Username, err)
-		}
-	}
-
-	if len(fetched.Medias) > 0 {
-		post_entity, err := database.InsertInstagramPost(db, ctx, &database.InsertInstagramPostInput{UserId: user.Id, Description: ""})
-		if err != nil {
-			return fmt.Errorf("failed to store post: %w", err)
-		}
-
-		for _, media := range fetched.Medias {
-			if err := database.InsertInstagramMedia(db, ctx, &database.InsertInstagramMediaInput{PostId: post_entity.Id, Kind: media.Type, Url: media.Url}); err != nil {
-				return fmt.Errorf("failed to store media: %w", err)
-			}
 		}
 	}
 
