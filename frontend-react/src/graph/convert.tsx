@@ -1,9 +1,11 @@
 import type { GraphData, PersonData } from "./dtos";
 import { useWebHoundSearchingStore } from "@/searching/store";
+import { useWebHoundGraphLimit } from "@/settings/limits/store";
 import { WebHoundSocialGraph } from "./graph";
 
 export function GitHubSocialGraph() {
   const { github, setUsername } = useWebHoundSearchingStore();
+  const { limit } = useWebHoundGraphLimit();
 
   if (github === undefined) {
     throw new Error("add WithActualResults before calling this shit");
@@ -17,23 +19,27 @@ export function GitHubSocialGraph() {
     return <div>GitHub info not found</div>;
   }
 
-  const followees: { person: PersonData; kind: "to" }[] = github.followees.map((followee) => ({
-    person: {
-      label: followee.username,
-      image: followee.pfp_url,
-      onClick: () => setUsername(followee.username),
-    },
-    kind: "to",
-  }));
+  const followees: { person: PersonData; kind: "to" }[] = github.followees
+    .slice(0, limit)
+    .map((followee) => ({
+      person: {
+        label: followee.username,
+        image: followee.pfp_url,
+        onClick: () => setUsername(followee.username),
+      },
+      kind: "to",
+    }));
 
-  const followers: { person: PersonData; kind: "by" }[] = github.followers.map((follower) => ({
-    person: {
-      label: follower.username,
-      image: follower.pfp_url,
-      onClick: () => setUsername(follower.username),
-    },
-    kind: "by",
-  }));
+  const followers: { person: PersonData; kind: "by" }[] = github.followers
+    .slice(0, limit)
+    .map((follower) => ({
+      person: {
+        label: follower.username,
+        image: follower.pfp_url,
+        onClick: () => setUsername(follower.username),
+      },
+      kind: "by",
+    }));
 
   const graphData: GraphData = {
     main: { label: github.username, image: github.pfp_url },
@@ -50,6 +56,7 @@ export function GitHubSocialGraph() {
 
 export function InstagramSocialGraph() {
   const { instagram, setUsername } = useWebHoundSearchingStore();
+  const { limit } = useWebHoundGraphLimit();
 
   if (instagram === undefined) {
     throw new Error("add WithActualResults before calling this shit");
@@ -71,23 +78,27 @@ export function InstagramSocialGraph() {
     return <div>Instagram profile is private, so social graph is not available</div>;
   }
 
-  const followees: { person: PersonData; kind: "to" }[] = instagram.followees.map((followee) => ({
-    person: {
-      label: followee.username,
-      image: followee.pfp_url,
-      onClick: () => setUsername(followee.username),
-    },
-    kind: "to",
-  }));
+  const followees: { person: PersonData; kind: "to" }[] = instagram.followees
+    .slice(0, limit)
+    .map((followee) => ({
+      person: {
+        label: followee.username,
+        image: followee.pfp_url,
+        onClick: () => setUsername(followee.username),
+      },
+      kind: "to",
+    }));
 
-  const followers: { person: PersonData; kind: "by" }[] = instagram.followers.map((follower) => ({
-    person: {
-      label: follower.username,
-      image: follower.pfp_url,
-      onClick: () => setUsername(follower.username),
-    },
-    kind: "by",
-  }));
+  const followers: { person: PersonData; kind: "by" }[] = instagram.followers
+    .slice(0, limit)
+    .map((follower) => ({
+      person: {
+        label: follower.username,
+        image: follower.pfp_url,
+        onClick: () => setUsername(follower.username),
+      },
+      kind: "by",
+    }));
 
   const graphData: GraphData = {
     main: { label: instagram.username, image: instagram.pfp_url },

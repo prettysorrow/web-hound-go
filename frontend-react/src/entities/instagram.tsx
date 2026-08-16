@@ -42,7 +42,7 @@ export function InstagramResults() {
         {props.users.map((user) => (
           <BoxWithUsernameRef key={user.username} to={user.username}>
             <label className="flex flex-row gap-2 items-center">
-              <img className="w-8 h-8 rounded-[50%]" src={user.pfp_url}></img>
+              <img className="w-8 h-8 rounded-[50%]" src={user.pfp_url} referrerPolicy="no-referrer"></img>
               <span>{user.username}</span>
             </label>
           </BoxWithUsernameRef>
@@ -56,7 +56,7 @@ export function InstagramResults() {
       <CardHeader>
         <div className="flex flex-row justify-center font-medium text-lg">Instagram profile</div>
         <label className="flex flex-row gap-4 items-center">
-          <img className="rounded-[50%] w-18 h-18" src={instagram.pfp_url}></img>
+          <img className="rounded-[50%] w-18 h-18" src={instagram.pfp_url} referrerPolicy="no-referrer"></img>
           <span className="text-xl font-medium">{instagram.username}</span>
         </label>
       </CardHeader>

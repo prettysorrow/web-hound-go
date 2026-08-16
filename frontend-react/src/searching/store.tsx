@@ -7,11 +7,13 @@ export type WebHoundStore___Searching = {
   username: string | undefined;
   github: GitHubUserVerbose | "Not found" | "Disabled" | undefined;
   instagram: InstagramUserVerbose | "Not found" | "No credentials" | "Disabled" | undefined;
+  searchingFor: string | undefined;
   setUsername(username: string): void;
   setGitHub(value: GitHubUserVerbose | "Not found" | "Disabled" | undefined): void;
   setInstagram(
     user: InstagramUserVerbose | "Not found" | "No credentials" | "Disabled" | undefined,
   ): void;
+  setSearchingFor(username: string | undefined): void;
 };
 
 export const useWebHoundSearchingStore = create<WebHoundStore___Searching>((set) => {
@@ -29,8 +31,10 @@ export const useWebHoundSearchingStore = create<WebHoundStore___Searching>((set)
     username: undefined,
     github: undefined,
     instagram: undefined,
+    searchingFor: undefined,
     setUsername: (username) => set((state) => ({ ...state, username: username })),
     setGitHub: (value) => set((state) => ({ ...state, github: value })),
     setInstagram: (value) => set((state) => ({ ...state, instagram: value })),
+    setSearchingFor: (username) => set((state) => ({ ...state, searchingFor: username })),
   };
 });

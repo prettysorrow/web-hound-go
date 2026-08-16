@@ -85,6 +85,7 @@ function ImageNodeComponent({ data }: NodeProps<ImageNode>) {
       <img
         src={data.image}
         alt={data.label}
+        referrerPolicy="no-referrer"
         style={{
           width: size,
           height: size,
@@ -249,6 +250,8 @@ export function WebHoundSocialGraph({ main, others }: GraphData) {
         nodesDraggable={false}
         nodesConnectable={false}
         elementsSelectable={false}
+        minZoom={0.01}
+        maxZoom={100}
       >
         <Background />
       </ReactFlow>

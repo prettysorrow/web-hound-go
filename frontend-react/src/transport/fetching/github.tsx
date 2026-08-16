@@ -16,9 +16,11 @@ function toShort(user: BackendGitHubUser): GitHubUserShort {
   return { kind: "short", username: user.username, pfp_url: user.pfp_url };
 }
 
-export async function GetGitHubUser(username: string): Promise<GitHubUserVerbose | undefined> {
+export async function GetGitHubUser(username: string, limit: number): Promise<GitHubUserVerbose | undefined> {
   try {
-    const response = await axios.get<BackendGitHubUser>(`${base_url}/api/github/users/${username}`);
+    const response = await axios.get<BackendGitHubUser>(
+      `${base_url}/api/github/users/${username}?limit=${limit}`,
+    );
     const user = response.data;
     return {
       kind: "verbose",

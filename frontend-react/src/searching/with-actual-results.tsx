@@ -8,7 +8,8 @@ export function WithActualResults(props: { children: React.ReactNode }) {
   const searcher = useSearcher();
   const { activeCreds } = useCredentials();
   const { enabled } = useWebHoundEnabledServices();
-  const { username, github, instagram, setGitHub, setInstagram } = useWebHoundSearchingStore();
+  const { username, github, instagram, setGitHub, setInstagram, setSearchingFor } =
+    useWebHoundSearchingStore();
 
   useEffect(() => {
     if (username === undefined) {
@@ -17,22 +18,27 @@ export function WithActualResults(props: { children: React.ReactNode }) {
     }
 
     const target = username;
-    let cancelled = false;
+    // a search for this username is already in progress (e.g. a duplicate
+    // StrictMode mount), so there is nothing new to do here
+    if (useWebHoundSearchingStore.getState().searchingFor === target) {
+      return;
+    }
 
+    setSearchingFor(target);
     setGitHub(undefined);
     setInstagram(undefined);
 
     async function search() {
       if (enabled.github) {
         const github = await searcher.searchGitHub(target);
-        if (!cancelled) {
+        if (useWebHoundSearchingStore.getState().username === target) {
           if (github !== undefined) {
             setGitHub(github);
           } else {
             setGitHub("Not found");
           }
         }
-      } else if (!cancelled) {
+      } else if (useWebHoundSearchingStore.getState().username === target) {
         setGitHub("Disabled");
       }
 
@@ -41,12 +47,12 @@ export function WithActualResults(props: { children: React.ReactNode }) {
           searcher.requiresInstagramCredentials &&
           (activeCreds === undefined || activeCreds.instagram === undefined)
         ) {
-          if (!cancelled) {
+          if (useWebHoundSearchingStore.getState().username === target) {
             setInstagram("No credentials");
           }
         } else {
           const instagram = await searcher.searchInstagram(target, activeCreds?.instagram);
-          if (!cancelled) {
+          if (useWebHoundSearchingStore.getState().username === target) {
             if (instagram !== undefined) {
               setInstagram(instagram);
             } else {
@@ -54,16 +60,16 @@ export function WithActualResults(props: { children: React.ReactNode }) {
             }
           }
         }
-      } else if (!cancelled) {
+      } else if (useWebHoundSearchingStore.getState().username === target) {
         setInstagram("Disabled");
+      }
+
+      if (useWebHoundSearchingStore.getState().searchingFor === target) {
+        setSearchingFor(undefined);
       }
     }
 
     search();
-
-    return () => {
-      cancelled = true;
-    };
   }, [username]);
 
   if (username === undefined) {
