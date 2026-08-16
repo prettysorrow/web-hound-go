@@ -9,13 +9,11 @@ test("choise enabled services and assert that them are persist", async ({ page }
 
   // confugure enabled services
   await panel.getByRole("checkbox", { name: "github" }).check();
-  await panel.getByRole("checkbox", { name: "telegram" }).uncheck();
   await panel.getByRole("checkbox", { name: "instagram" }).check();
   await panel.getByRole("checkbox", { name: "steam" }).uncheck();
 
   // assert configuration is ok before page reloading
   await expect(panel.getByRole("checkbox", { name: "github" })).toBeChecked();
-  await expect(panel.getByRole("checkbox", { name: "telegram" })).not.toBeChecked();
   await expect(panel.getByRole("checkbox", { name: "instagram" })).toBeChecked();
   await expect(panel.getByRole("checkbox", { name: "steam" })).not.toBeChecked();
 
@@ -25,7 +23,6 @@ test("choise enabled services and assert that them are persist", async ({ page }
 
   // assert configuration is ok after page reloading
   await expect(panel.getByRole("checkbox", { name: "github" })).toBeChecked();
-  await expect(panel.getByRole("checkbox", { name: "telegram" })).not.toBeChecked();
   await expect(panel.getByRole("checkbox", { name: "instagram" })).toBeChecked();
   await expect(panel.getByRole("checkbox", { name: "steam" })).not.toBeChecked();
 

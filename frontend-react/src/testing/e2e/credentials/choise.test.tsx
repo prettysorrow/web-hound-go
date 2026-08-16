@@ -7,9 +7,9 @@ test("create and choise credentials", async ({ page }) => {
 
   // create new credentials
   await page.getByRole("textbox", { name: "title" }).fill("my-new-credentials");
-  await page.getByRole("checkbox", { name: "telegram" }).check();
-  await page.getByRole("textbox", { name: "api id" }).fill("my-telegram-api-id");
-  await page.getByRole("textbox", { name: "api hash" }).fill("my-telegram-api-hash");
+  await page.getByRole("checkbox", { name: "instagram" }).check();
+  await page.getByRole("textbox", { name: "instagram login" }).fill("my-instagram-login");
+  await page.getByRole("textbox", { name: "instagram password" }).fill("my-instagram-password");
   await page.getByRole("button", { name: "add" }).click();
 
   // new credentials should appear inside the 'Your other credentials' section
@@ -17,8 +17,8 @@ test("create and choise credentials", async ({ page }) => {
 
   // assert that new credentials are visible inside the 'Your other credentials' section
   await expect(otherCreds.getByText("my-new-credentials")).toBeVisible();
-  await expect(otherCreds.getByText("my-telegram-api-id")).toBeVisible();
-  await expect(otherCreds.getByText("my-telegram-api-hash")).toBeVisible();
+  await expect(otherCreds.getByText("my-instagram-login")).toBeVisible();
+  await expect(otherCreds.getByText("my-instagram-password")).toBeVisible();
 
   // set new credentials as the active one
   await otherCreds
@@ -32,9 +32,9 @@ test("create and choise credentials", async ({ page }) => {
   // now new credentials should appear inside the 'Your active credentials' section
   const activeCreds = page.locator("*", { hasText: "Your active credentials" });
   await expect(activeCreds.getByText("my-new-credentials")).toBeVisible();
-  await expect(activeCreds.getByText("my-telegram-api-id")).toBeVisible();
-  await expect(activeCreds.getByText("my-telegram-api-hash")).toBeVisible();
+  await expect(activeCreds.getByText("my-instagram-login")).toBeVisible();
+  await expect(activeCreds.getByText("my-instagram-password")).toBeVisible();
 
   // take screenshot of the results
-  await page.screenshot({ path: "screenshots/choisen-credentials-with-telegram-enabled.png" });
+  await page.screenshot({ path: "screenshots/choisen-credentials-with-instagram-enabled.png" });
 });

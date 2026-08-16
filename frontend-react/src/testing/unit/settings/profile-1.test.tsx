@@ -4,7 +4,7 @@ import { expect, test } from "vitest";
 
 test("show profile info", async () => {
   render(<WebHoundProfile />);
-  expect(await screen.findByText("Hello, Alexandra Yoshimura!")).toBeInTheDocument();
+  expect(await screen.findByText("Hello, Artem!")).toBeInTheDocument();
   expect(await screen.findByText("Used service:")).toBeInTheDocument();
-  expect(await screen.findByText("Telegram")).toBeInTheDocument();
+  expect(await screen.findByText("GitHub")).toBeInTheDocument();
 });
