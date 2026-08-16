@@ -7,13 +7,13 @@ login, password = os.environ["INSTAGRAM_LOGIN"], os.environ["INSTAGRAM_PASSWORD"
 _client = None
 
 
-async def get_client():
+def get_client():
     global _client
 
     if _client is None:
         from instagrapi import Client
 
-        _client = Client()
+        _client = Client(delay_range=[0.2, 0.5])
 
         if os.path.exists(path=session):
             _client.load_settings(session)

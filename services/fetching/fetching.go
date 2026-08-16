@@ -30,9 +30,9 @@ type GitHubUser struct {
 	Followees []*GitHubUser `json:"followees"`
 }
 
-func (c *Client) GetGitHubUser(ctx context.Context, username string) (*GitHubUser, error) {
+func (c *Client) GetGitHubUser(ctx context.Context, username string, limit int) (*GitHubUser, error) {
 	var user GitHubUser
-	if err := c.getJSON(ctx, fmt.Sprintf("/api/fetching/github/users/%s", username), &user); err != nil {
+	if err := c.getJSON(ctx, fmt.Sprintf("/api/fetching/github/users/%s?limit=%d", username, limit), &user); err != nil {
 		return nil, err
 	}
 	return &user, nil
@@ -46,9 +46,9 @@ type InstagramUser struct {
 	Followees []*InstagramUser `json:"followees"`
 }
 
-func (c *Client) GetInstagramUser(ctx context.Context, username string) (*InstagramUser, error) {
+func (c *Client) GetInstagramUser(ctx context.Context, username string, limit int) (*InstagramUser, error) {
 	var user InstagramUser
-	if err := c.getJSON(ctx, fmt.Sprintf("/api/fetching/instagram/users/%s", username), &user); err != nil {
+	if err := c.getJSON(ctx, fmt.Sprintf("/api/fetching/instagram/users/%s?limit=%d", username, limit), &user); err != nil {
 		return nil, err
 	}
 	return &user, nil
