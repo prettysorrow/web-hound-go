@@ -9,13 +9,13 @@ import (
 	webhound_fetching "go.mod/services/fetching"
 )
 
-func GetInstagramUserOrFetch(db *pgxpool.Pool, ctx context.Context, fetching *webhound_fetching.Client, username string) (*InstagramUserPublicInfo, error) {
+func GetInstagramUserOrFetch(db *pgxpool.Pool, ctx context.Context, fetching *webhound_fetching.Client, username string, limit int) (*InstagramUserPublicInfo, error) {
 	user, err := database.SelectInstagramUserByUsername(db, ctx, username)
 	if err == nil && user.Kind != "short" {
 		return buildInstagramUserInfo(db, ctx, user)
 	}
 
-	fetched, err := fetching.GetInstagramUser(ctx, username)
+	fetched, err := fetching.GetInstagramUser(ctx, username, limit)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch instagram user @%s from external service: %w", username, err)
 	}

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -27,7 +28,20 @@ func AddGetUserHandler(r *chi.Mux, db *pgxpool.Pool, fetching *webhound_fetching
 
 		username := chi.URLParam(r, "username")
 
-		user_dto, err := GetUserDtoOrFetch(db, ctx, fetching, username)
+		limit := 50
+		if raw := r.URL.Query().Get("limit"); raw != "" {
+			if parsed, err := strconv.Atoi(raw); err == nil {
+				limit = parsed
+			}
+		}
+		if limit < 1 {
+			limit = 1
+		}
+		if limit > 100 {
+			limit = 100
+		}
+
+		user_dto, err := GetUserDtoOrFetch(db, ctx, fetching, username, limit)
 		if err != nil {
 			err = fmt.Errorf("failed to fetch user @%s for GET /github/users/{username}: %w", username, err)
 			w.WriteHeader(http.StatusBadRequest)

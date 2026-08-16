@@ -9,13 +9,13 @@ import (
 	webhound_fetching "go.mod/services/fetching"
 )
 
-func GetUserDtoOrFetch(db *pgxpool.Pool, ctx context.Context, fetching *webhound_fetching.Client, username string) (*User, error) {
+func GetUserDtoOrFetch(db *pgxpool.Pool, ctx context.Context, fetching *webhound_fetching.Client, username string, limit int) (*User, error) {
 	user_dto, err := GetUserDto(db, ctx, username)
 	if err == nil && user_dto.Verbose {
 		return user_dto, nil
 	}
 
-	fetched, err := fetching.GetGitHubUser(ctx, username)
+	fetched, err := fetching.GetGitHubUser(ctx, username, limit)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch github user @%s from external service: %w", username, err)
 	}

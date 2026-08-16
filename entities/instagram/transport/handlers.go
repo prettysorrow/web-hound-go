@@ -6,6 +6,9 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
+	"strconv"
+	"strings"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -29,7 +32,20 @@ func AddGetInstagramUserHandler(router chi.Router, db *pgxpool.Pool, fetching *w
 
 		username := chi.URLParam(r, "username")
 
-		user_info, err := GetInstagramUserOrFetch(db, ctx, fetching, username)
+		limit := 50
+		if raw := r.URL.Query().Get("limit"); raw != "" {
+			if parsed, err := strconv.Atoi(raw); err == nil {
+				limit = parsed
+			}
+		}
+		if limit < 1 {
+			limit = 1
+		}
+		if limit > 500 {
+			limit = 500
+		}
+
+		user_info, err := GetInstagramUserOrFetch(db, ctx, fetching, username, limit)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			encoder.Encode(fmt.Errorf("failed to get instagram user: %w", err).Error())
@@ -158,5 +174,49 @@ func AddPostInstagramUser(router chi.Router, db *pgxpool.Pool, ctx context.Conte
 		}
 
 		panic("should not happen")
+	})
+}
+
+// @Summary      Get an Instagram avatar image
+// @Description  Proxies an Instagram CDN avatar through the backend. The CDN sends Cross-Origin-Resource-Policy: same-origin, which blocks the browser from embedding the image, so it is fetched server-side instead.
+// @Tags         instagram
+// @Param        url query string true "Instagram CDN image url"
+// @Success      200 {file} binary "Image bytes"
+// @Failure      400 {object} string "Invalid url"
+// @Failure      502 {object} string "Failed to fetch image"
+// @Router       /api/instagram/avatars [get]
+func AddGetInstagramAvatarHandler(router chi.Router) {
+	router.Get("/api/instagram/avatars", func(w http.ResponseWriter, r *http.Request) {
+		image_url := r.URL.Query().Get("url")
+
+		parsed_url, err := url.Parse(image_url)
+		if err != nil || parsed_url.Scheme != "https" || !strings.HasSuffix(parsed_url.Host, ".cdninstagram.com") {
+			w.WriteHeader(http.StatusBadRequest)
+			io.WriteString(w, "invalid avatar url")
+			return
+		}
+
+		req, err := http.NewRequestWithContext(r.Context(), http.MethodGet, image_url, nil)
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			io.WriteString(w, "invalid avatar url")
+			return
+		}
+		req.Header.Set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36")
+
+		resp, err := http.DefaultClient.Do(req)
+		if err != nil || resp.StatusCode != http.StatusOK {
+			if resp != nil {
+				resp.Body.Close()
+			}
+			w.WriteHeader(http.StatusBadGateway)
+			io.WriteString(w, "failed to fetch avatar")
+			return
+		}
+		defer resp.Body.Close()
+
+		w.Header().Set("Content-Type", resp.Header.Get("Content-Type"))
+		w.WriteHeader(http.StatusOK)
+		io.Copy(w, resp.Body)
 	})
 }
