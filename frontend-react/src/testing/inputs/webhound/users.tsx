@@ -6,9 +6,4 @@ export const WebHoundTesting___WebHoundUsers: WebHoundUser[] = [
     service_id: "prettysorrow",
     display_name: "Artem",
   },
-  {
-    used_service: "telegram",
-    service_id: "letmedieinsorrow",
-    display_name: "Alexandra Yoshimura",
-  },
 ];

@@ -32,10 +32,6 @@ with open(settings_path, "r") as f:
                     from github.handlers import router as github_router
 
                     app.include_router(github_router)
-                case "telegram":
-                    from telegram.handlers import router as telegram_router
-
-                    app.include_router(telegram_router)
                 case "instagram":
                     from instagram.handlers import router as instagram_router
 

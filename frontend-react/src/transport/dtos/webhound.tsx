@@ -1,4 +1,4 @@
-export type LoginServices = "telegram" | "gmail" | "github";
+export type LoginServices = "gmail" | "github";
 
 export interface WebHoundUser {
   used_service: LoginServices;

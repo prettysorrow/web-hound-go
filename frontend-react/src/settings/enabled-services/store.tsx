@@ -1,12 +1,11 @@
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
-type SupportedServices = "github" | "telegram" | "instagram" | "steam";
+type SupportedServices = "github" | "instagram" | "steam";
 
 export interface WebHoundStore___EnabledServices {
   enabled: {
     github: boolean;
-    telegram: boolean;
     instagram: boolean;
     steam: boolean;
   };
@@ -22,8 +21,6 @@ function _setService(
   value: boolean,
 ) {
   switch (service) {
-    case "telegram":
-      return { ...state, enabled: { ...state.enabled, telegram: value } };
     case "instagram":
       return { ...state, enabled: { ...state.enabled, instagram: value } };
     case "steam":
@@ -41,7 +38,6 @@ export const useWebHoundEnabledServices = create<WebHoundStore___EnabledServices
     (set) => ({
       enabled: {
         github: false,
-        telegram: false,
         instagram: false,
         steam: false,
       },

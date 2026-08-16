@@ -3,7 +3,7 @@ CREATE SCHEMA webhound;
 CREATE TABLE webhound.user (
     id             serial   PRIMARY KEY,
     display_name   text     NOT NULL,
-    used_service   text     NOT NULL CHECK (used_service IN ( 'telegram', 'gmail', 'github' )),
+    used_service   text     NOT NULL CHECK (used_service IN ( 'gmail', 'github' )),
     service_id     text     NOT NULL,
     UNIQUE (used_service, service_id)
 );

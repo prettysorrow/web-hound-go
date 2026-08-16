@@ -9,7 +9,6 @@ import { Button } from "@/components/ui/button";
 
 const NewCredsInitState = {
   title: "",
-  telegram: undefined,
   instagram: undefined,
   steam: undefined,
 };
@@ -17,13 +16,7 @@ const NewCredsInitState = {
 type NewCredsAction =
   | {
       type: "init";
-      service: "telegram" | "instagram" | "steam";
-    }
-  | {
-      type: "set";
-      service: "telegram";
-      api_id: string;
-      api_hash: string;
+      service: "instagram" | "steam";
     }
   | {
       type: "set";
@@ -38,7 +31,7 @@ type NewCredsAction =
     }
   | {
       type: "unset";
-      service: "telegram" | "instagram" | "steam";
+      service: "instagram" | "steam";
     }
   | {
       type: "title";
@@ -50,26 +43,17 @@ type NewCredsAction =
     };
 
 function reduceNewCreds(state: Credentials, action: NewCredsAction): Credentials {
-  if (action.type === "init" && action.service === "telegram") {
-    return { ...state, telegram: { api_id: "", api_hash: "" } };
-  }
   if (action.type === "init" && action.service === "instagram") {
     return { ...state, instagram: { login: "", password: "" } };
   }
   if (action.type === "init" && action.service === "steam") {
     return { ...state, steam: { web_api_key: "" } };
   }
-  if (action.type === "set" && action.service === "telegram") {
-    return { ...state, telegram: { api_id: action.api_id, api_hash: action.api_hash } };
-  }
   if (action.type === "set" && action.service === "instagram") {
     return { ...state, instagram: { login: action.login, password: action.password } };
   }
   if (action.type === "set" && action.service === "steam") {
     return { ...state, steam: { web_api_key: action.web_api_key } };
-  }
-  if (action.type === "unset" && action.service === "telegram") {
-    return { ...state, telegram: undefined };
   }
   if (action.type === "unset" && action.service === "instagram") {
     return { ...state, instagram: undefined };
@@ -101,59 +85,6 @@ function useNewCreds() {
   }
 
   return context;
-}
-
-function TelegramApiIdInput(props: { api_id: string; api_hash: string }) {
-  let { creds, setCreds } = useNewCreds();
-
-  return (
-    <Input
-      type="text"
-      value={props.api_id}
-      placeholder="Telegram API Id..."
-      onChange={(e) =>
-        setCreds({
-          type: "set",
-          service: "telegram",
-          api_id: e.target.value,
-          api_hash: props.api_hash,
-        })
-      }
-    ></Input>
-  );
-}
-
-function TelegramApiHashInput(props: { api_id: string; api_hash: string }) {
-  let { creds, setCreds } = useNewCreds();
-
-  return (
-    <Input
-      type="text"
-      value={props.api_hash}
-      placeholder="Telegram API Hash..."
-      onChange={(e) =>
-        setCreds({
-          type: "set",
-          service: "telegram",
-          api_id: props.api_id,
-          api_hash: e.target.value,
-        })
-      }
-    ></Input>
-  );
-}
-
-function TelegramInputs() {
-  let { creds, setCreds } = useNewCreds();
-  if (creds.telegram !== undefined) {
-    return (
-      <>
-        <TelegramApiIdInput api_id={creds.telegram.api_id} api_hash={creds.telegram.api_hash} />
-        <TelegramApiHashInput api_id={creds.telegram.api_id} api_hash={creds.telegram.api_hash} />
-      </>
-    );
-  }
-  return <></>;
 }
 
 function InstagramLoginInput(props: { login: string; password: string }) {
@@ -208,7 +139,7 @@ function InstagramInputs() {
   );
 }
 
-function ServiceCheckboxWithName(props: { service: "telegram" | "instagram" | "steam" }) {
+function ServiceCheckboxWithName(props: { service: "instagram" | "steam" }) {
   let { creds, setCreds } = useNewCreds();
 
   return (
@@ -247,16 +178,6 @@ function isNewCredsValid(newCreds: Credentials, allCreds: Credentials[]): string
     return "title is already in use";
   }
 
-  if (newCreds.telegram !== undefined) {
-    if (newCreds.telegram.api_id === "") {
-      return "telegram api id is empty";
-    }
-
-    if (newCreds.telegram.api_hash === "") {
-      return "telegram api hash is empty";
-    }
-  }
-
   if (newCreds.instagram !== undefined) {
     if (newCreds.instagram.login === "") {
       return "instagram login is empty";
@@ -272,11 +193,7 @@ function isNewCredsValid(newCreds: Credentials, allCreds: Credentials[]): string
     }
   }
 
-  if (
-    newCreds.telegram === undefined &&
-    newCreds.instagram === undefined &&
-    newCreds.steam === undefined
-  ) {
+  if (newCreds.instagram === undefined && newCreds.steam === undefined) {
     return "credentials are empty";
   }
 
@@ -334,7 +251,6 @@ function AddCredentialsButton() {
   let newCredsAreInvalidState = useNewCredsAreInvalidStore();
 
   function ClearInputs() {
-    setCreds({ type: "unset", service: "telegram" });
     setCreds({ type: "unset", service: "instagram" });
     setCreds({ type: "unset", service: "steam" });
     setCreds({ type: "title", title: "" });
@@ -361,10 +277,6 @@ export function AddCredentials() {
         <FieldGroup>
           <Field>
             <CredentialsTitleInput />
-          </Field>
-          <Field>
-            <ServiceCheckboxWithName service="telegram" />
-            <TelegramInputs />
           </Field>
           <Field>
             <ServiceCheckboxWithName service="instagram" />

@@ -19,13 +19,6 @@ export function WebHoundEnabledServices() {
         </label>
         <label className="flex flex-row gap-2 items-center">
           <Checkbox
-            checked={enabled.enabled.telegram}
-            onCheckedChange={(checked) => enabled.setService("telegram", checked)}
-          />
-          <span>Telegram</span>
-        </label>
-        <label className="flex flex-row gap-2 items-center">
-          <Checkbox
             checked={enabled.enabled.instagram}
             onCheckedChange={(checked) => enabled.setService("instagram", checked)}
           />

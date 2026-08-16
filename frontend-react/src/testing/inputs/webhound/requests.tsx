@@ -28,14 +28,4 @@ export const WebHoundTesting___WebHoundRequests: WebHoundRequest[] = [
       },
     ],
   },
-  {
-    created_by: {
-      used_service: "telegram",
-      service_id: "letmedieinsorrow",
-      display_name: "Alexandra Yoshimura",
-    },
-    created_on: "prettysorrow",
-    created_at: "2011-11-11 23:00:00.123456789 +0000 UTC m=+0.123456789",
-    results: [],
-  },
 ];

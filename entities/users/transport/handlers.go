@@ -16,8 +16,8 @@ import (
 // @Tags         users
 // @Accept       json
 // @Produce      json
-// @Param        used_service path string true "Authentication service name (e.g. telegram)"
-// @Param        service_id   path string true "User ID within the specified service (e.g. telegram username)"
+// @Param        used_service path string true "Authentication service name (e.g. github)"
+// @Param        service_id   path string true "User ID within the specified service (e.g. github username)"
 // @Success      200 {object} webhound_users_transport.User "User found"
 // @Failure      400 {object} string "User not found or invalid parameters"
 // @Router       /users/{used_service}/{service_id} [get]
