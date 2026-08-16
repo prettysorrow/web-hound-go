@@ -21,5 +21,8 @@ export default defineConfig({
     environment: "jsdom",
     setupFiles: ["./src/testing/setup.tsx"],
     include: ["src/testing/unit/**/*.test.{ts,tsx}"],
+    env: {
+      VITE_USE_TESTING_DATA: "true",
+    },
   },
 });

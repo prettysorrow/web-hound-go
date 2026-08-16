@@ -12,7 +12,7 @@ export default defineConfig({
     actionTimeout: 5000,
   },
   webServer: {
-    command: "npm run dev",
+    command: "npm run dev:testing",
     port: 5174,
   },
   projects: [
