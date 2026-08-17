@@ -15,8 +15,13 @@ func Init() error {
 
 	viper.SetConfigFile(path)
 	viper.SetConfigType("dotenv")
-	if err := viper.ReadInConfig(); err != nil {
-		return fmt.Errorf("failed to read env config from %s: %w", path, err)
+
+	if _, err := os.Stat(path); err == nil {
+		if err := viper.ReadInConfig(); err != nil {
+			return fmt.Errorf("failed to read env config from %s: %w", path, err)
+		}
+	} else if !os.IsNotExist(err) {
+		return fmt.Errorf("failed to stat env config %s: %w", path, err)
 	}
 
 	viper.AutomaticEnv()

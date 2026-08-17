@@ -10,7 +10,7 @@ import (
 func GetRequest(db *pgxpool.Pool, ctx context.Context, id int64) (*Request, error) {
 	var request Request
 
-	row := db.QueryRow(ctx, "select * from core.request where id = $1;", id)
+	row := db.QueryRow(ctx, "select * from webhound.request where id = $1;", id)
 	err := row.Scan(&request.Id, &request.CreatedAt, &request.CreatedOn, &request.CreatedBy, &request.ResultsIds)
 
 	if err != nil {
@@ -24,7 +24,7 @@ func GetRequest(db *pgxpool.Pool, ctx context.Context, id int64) (*Request, erro
 func GetRequests(db *pgxpool.Pool, ctx context.Context) ([]Request, error) {
 	requests := []Request{}
 
-	rows, err := db.Query(ctx, "select * from core.request;")
+	rows, err := db.Query(ctx, "select * from webhound.request;")
 
 	if err != nil {
 		err = fmt.Errorf("failed to select all requests: %w", err)
@@ -55,7 +55,7 @@ func GetRequests(db *pgxpool.Pool, ctx context.Context) ([]Request, error) {
 func GetUserRequests(db *pgxpool.Pool, ctx context.Context, user_id int64) ([]Request, error) {
 	requests := []Request{}
 
-	rows, err := db.Query(ctx, "select * from core.request where created_by = $1;", user_id)
+	rows, err := db.Query(ctx, "select * from webhound.request where created_by = $1;", user_id)
 
 	if err != nil {
 		err = fmt.Errorf("failed to select requests for user with user_id=%d: %w", user_id, err)
@@ -92,7 +92,7 @@ type PostRequestInput struct {
 func PostRequest(db *pgxpool.Pool, ctx context.Context, input PostRequestInput) (*Request, error) {
 	var request Request
 
-	row := db.QueryRow(ctx, "insert into core.request (created_on, created_by, results_ids) values ($1, $2, $3) returning id, created_at, created_on, created_by, results_ids;", input.CreatedOn, input.CreatedBy, input.ResultsIds)
+	row := db.QueryRow(ctx, "insert into webhound.request (created_on, created_by, results_ids) values ($1, $2, $3) returning id, created_at, created_on, created_by, results_ids;", input.CreatedOn, input.CreatedBy, input.ResultsIds)
 	err := row.Scan(&request.Id, &request.CreatedAt, &request.CreatedOn, &request.CreatedBy, &request.ResultsIds)
 
 	if err != nil {
@@ -106,7 +106,7 @@ func PostRequest(db *pgxpool.Pool, ctx context.Context, input PostRequestInput) 
 func GetResultsByIds(db *pgxpool.Pool, ctx context.Context, resultsIds []int64) ([]Result, error) {
 	results := []Result{}
 
-	rows, err := db.Query(ctx, "select * from core.result where core.result.id = any($1);", resultsIds)
+	rows, err := db.Query(ctx, "select * from webhound.result where webhound.result.id = any($1);", resultsIds)
 	if err != nil {
 		return nil, fmt.Errorf("failed to select results: %v", err)
 	}
@@ -136,7 +136,7 @@ type PostResultRequest struct {
 
 func PostResult(db *pgxpool.Pool, ctx context.Context, request PostResultRequest) (*Result, error) {
 	var result Result
-	row := db.QueryRow(ctx, "insert into core.result (service, user_id) values ($1, $2) returning id, service, user_id;", request.Service, request.UserId)
+	row := db.QueryRow(ctx, "insert into webhound.result (service, user_id) values ($1, $2) returning id, service, user_id;", request.Service, request.UserId)
 	err := row.Scan(&result.Id, &result.Service, &result.UserId)
 	if err != nil {
 		return nil, fmt.Errorf("failed to insert result: %v", err)

@@ -28,6 +28,10 @@ func GetConnectionStringFromEnv() (*string, error) {
 	user := webhound_config.GetString("POSTGRES_USER")
 	password := webhound_config.GetString("POSTGRES_PASSWORD")
 	database_name := webhound_config.GetString("POSTGRES_DB")
+	host := webhound_config.GetString("POSTGRES_HOST")
+	if host == "" {
+		host = "localhost"
+	}
 	port := webhound_config.GetString("POSTGRES_HOST_PORT")
 
 	if user == "" || password == "" || database_name == "" || port == "" {
@@ -36,9 +40,10 @@ func GetConnectionStringFromEnv() (*string, error) {
 	}
 
 	cs := fmt.Sprintf(
-		"postgres://%s:%s@localhost:%s/%s?sslmode=disable",
+		"postgres://%s:%s@%s:%s/%s?sslmode=disable",
 		url.QueryEscape(user),
 		url.QueryEscape(password),
+		host,
 		port,
 		url.QueryEscape(database_name),
 	)

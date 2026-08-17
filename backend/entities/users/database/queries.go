@@ -14,7 +14,7 @@ type GetUserInput struct {
 
 func GetUser(db *pgxpool.Pool, ctx context.Context, input GetUserInput) (*User, error) {
 	var user User
-	row := db.QueryRow(ctx, "select * from core.user where used_service = $1 and service_id = $2;", input.UsedService, input.ServiceId)
+	row := db.QueryRow(ctx, "select * from webhound.user where used_service = $1 and service_id = $2;", input.UsedService, input.ServiceId)
 	err := row.Scan(&user.Id, &user.DisplayName, &user.UsedService, &user.ServiceId)
 
 	if err != nil {
@@ -26,7 +26,7 @@ func GetUser(db *pgxpool.Pool, ctx context.Context, input GetUserInput) (*User, 
 
 func GetUserById(db *pgxpool.Pool, ctx context.Context, id int64) (*User, error) {
 	var user User
-	row := db.QueryRow(ctx, "select * from core.user where id = $1;", id)
+	row := db.QueryRow(ctx, "select * from webhound.user where id = $1;", id)
 	err := row.Scan(&user.Id, &user.DisplayName, &user.UsedService, &user.ServiceId)
 
 	if err != nil {
@@ -44,7 +44,7 @@ type PostUserInput struct {
 
 func PostUser(db *pgxpool.Pool, ctx context.Context, input PostUserInput) (*User, error) {
 	var user User
-	row := db.QueryRow(ctx, "insert into core.user (display_name, used_service, service_id) values ($1, $2, $3) returning id, display_name, used_service, service_id;", input.DisplayName, input.UsedService, input.ServiceId)
+	row := db.QueryRow(ctx, "insert into webhound.user (display_name, used_service, service_id) values ($1, $2, $3) returning id, display_name, used_service, service_id;", input.DisplayName, input.UsedService, input.ServiceId)
 	err := row.Scan(&user.Id, &user.DisplayName, &user.UsedService, &user.ServiceId)
 
 	if err != nil {
@@ -55,7 +55,7 @@ func PostUser(db *pgxpool.Pool, ctx context.Context, input PostUserInput) (*User
 }
 
 func GetUsers(db *pgxpool.Pool, ctx context.Context) ([]User, error) {
-	rows, err := db.Query(ctx, "select * from core.user;")
+	rows, err := db.Query(ctx, "select * from webhound.user;")
 	if err != nil {
 		return nil, fmt.Errorf("failed to select all users: %w", err)
 	}
